@@ -1,0 +1,248 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   LudoEarn — Application Design Tokens & Refined Color Hunt Palette
+   Palette from Color Hunt:
+   • Deep Royal Navy: #1B263B, #0D1B2A
+   • Vibrant Cyber Cyan: #00D2D3, #00A8FF
+   • Electric Mint / Green: #00E676, #10B981
+   • Vivid Warm Gold: #FFC107, #FFD54F
+   • Clean Contrast Cards: #FFFFFF / #F8FAFC
+   ========================================================================== */
+
+:root {
+  /* Core Brand Primary (Vibrant Blue/Cyan from Color Hunt) */
+  --primary: #0070F3;
+  --primary-hover: #0060DF;
+  --primary-light: #EBF5FF;
+
+  /* Surfaces: Deep Midnight Base with Crisp White Elevated Cards */
+  --bg: #0B132B;
+  --bg-app: #0B132B;
+  --bg-card: #FFFFFF;
+  --surface: #1C2541;
+  --surface-2: #3A506B;
+
+  /* Typography Colors */
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --text-subtle: #94A3B8;
+  --text-light: #F8FAFC;
+
+  /* Color Hunt Accents */
+  --accent-cyan: #00D2D3;
+  --accent-emerald: #00D06C;
+  --accent-gold: #FFB703;
+  --accent-ruby: #FF3838;
+  --accent-purple: #7C3AED;
+
+  /* Fonts */
+  --font: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Bengali", "Hind Siliguri", sans-serif;
+  --font-num: ui-monospace, "SF Mono", "Roboto Mono", Menlo, monospace;
+
+  /* Dimensions */
+  --appbar-h: 60px;
+  --rail-h: 3px;
+  --nav-h: 64px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --r-full: 9999px;
+
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur: 0.2s;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: var(--bg);
+  font-family: var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  background-color: #0B132B;
+  color: #F8FAFC;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* 4-Color Signature Futuristic Rail (Color Hunt Gradient) */
+.token-rail {
+  height: var(--rail-h);
+  background: linear-gradient(
+    90deg,
+    #0070F3 0%,
+    #0070F3 25%,
+    #00D06C 25%,
+    #00D06C 50%,
+    #FFB703 50%,
+    #FFB703 75%,
+    #FF3838 75%,
+    #FF3838 100%
+  );
+  width: 100%;
+}
+
+/* App Bar Matching Screenshot: Deep Midnight Black/Navy Header */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--appbar-h);
+  background: #0B132B;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Bottom Navigation Bar */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  height: var(--nav-h);
+  background: rgba(20, 23, 29, 0.95);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-top: 1px solid rgba(255, 211, 105, 0.18);
+}
+
+/* Wallet Chip - Electric Cyan/Ice Gradient */
+.wallet-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--r-full);
+  background: linear-gradient(135deg, #00E5FF 0%, #0284C7 100%);
+  color: #02111E;
+  font-weight: 800;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.wallet-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.55);
+}
+.wallet-chip:active {
+  transform: scale(0.96);
+}
+
+/* Live Pulse Dot */
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background-color: #00E5FF;
+  box-shadow: 0 0 8px #00E5FF;
+  display: inline-block;
+  animation: pulse-dot 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+}
+
+/* Scrolling Announcement Ticker */
+.ticker-wrap {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  background: #060d1e;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+  height: 38px;
+  position: relative;
+}
+
+.ticker-move {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker-anim 26s linear infinite;
+  will-change: transform;
+}
+.ticker-move:hover {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-anim {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--surface-3);
+}
+
+/* Floating App Container Frame for Desktop */
+.app-viewport {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  position: relative;
+  background: var(--bg);
+  box-shadow: 0 0 60px rgba(255, 211, 105, 0.12);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Realistic Theme Card Glows */
+.card-glow-gold {
+  background: radial-gradient(100% 120% at 50% 0%, rgba(255, 211, 105, 0.15) 0%, transparent 70%), #222831;
+  border: 1px solid rgba(255, 211, 105, 0.28);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 30px rgba(10, 12, 16, 0.8), 0 0 20px rgba(255, 211, 105, 0.08);
+}
+
+.card-glow-cyan {
+  background: radial-gradient(100% 120% at 0% 0%, rgba(0, 173, 181, 0.15) 0%, transparent 65%), #222831;
+  border: 1px solid rgba(0, 173, 181, 0.3);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 30px rgba(10, 12, 16, 0.8), 0 0 22px rgba(0, 173, 181, 0.12);
+}
+
+.card-glow-emerald {
+  background: radial-gradient(100% 120% at 100% 0%, rgba(16, 185, 129, 0.15) 0%, transparent 65%), #222831;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 30px rgba(10, 12, 16, 0.8), 0 0 22px rgba(16, 185, 129, 0.12);
+}

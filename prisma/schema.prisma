@@ -1,0 +1,148 @@
+// Prisma schema for LudoEarn (PostgreSQL)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum MatchStatus {
+  WAITING      // Open for opponent to join
+  RUNNING      // Both players joined, room code active
+  COMPLETED    // Winner declared & prize credited
+  DISPUTED     // Contested result submitted, requires admin review
+  CANCELLED    // Refunded
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAW
+  MATCH_FEE
+  MATCH_WIN
+  REFERRAL_BONUS
+}
+
+enum TransactionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum MfsProvider {
+  BKASH
+  NAGAD
+  ROCKET
+  UPAY
+}
+
+model User {
+  id              String           @id @default(uuid())
+  phone           String           @unique
+  passwordHash    String
+  firstName       String
+  lastName        String
+  role            Role             @default(USER)
+  mainBalance     Decimal          @default(0.00) // For staking in matches
+  winBalance      Decimal          @default(0.00) // Withdrawable earnings
+  referCode       String           @unique
+  referredBy      String?          // Phone or referCode of inviter
+  avatar          String?
+  isBanned        Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // Relations
+  createdMatches  Match[]          @relation("MatchCreator")
+  joinedMatches   Match[]          @relation("MatchParticipant")
+  wonMatches      Match[]          @relation("MatchWinner")
+  transactions    Transaction[]
+
+  @@index([phone])
+  @@index([referCode])
+}
+
+model Match {
+  id              String           @id @default(uuid())
+  matchNo         Int              @unique @default(autoincrement())
+  title           String           @default("১ বনাম ১ ক্লাসিক ম্যাচ")
+  entryFee        Decimal
+  prize           Decimal
+  matchType       String           @default("1v1 Classic")
+  status          MatchStatus      @default(WAITING)
+  roomCode        String?          // 8-digit Ludo King Room Code
+  
+  // Players
+  creatorId       String
+  creator         User             @relation("MatchCreator", fields: [creatorId], references: [id])
+  opponentId      String?
+  opponent        User?            @relation("MatchParticipant", fields: [opponentId], references: [id])
+  
+  // Results & Verification
+  winnerId        String?
+  winner          User?            @relation("MatchWinner", fields: [winnerId], references: [id])
+  
+  creatorResult   String?          // "WON" | "LOST" | "DISPUTE"
+  opponentResult  String?          // "WON" | "LOST" | "DISPUTE"
+  
+  creatorProofUrl String?          // Cloudinary URL for screenshot
+  opponentProofUrl String?         // Cloudinary URL for screenshot
+  
+  disputeReason   String?
+  adminNotes      String?
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([status])
+  @@index([creatorId])
+  @@index([opponentId])
+}
+
+model Transaction {
+  id              String            @id @default(uuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id])
+  type            TransactionType
+  amount          Decimal
+  status          TransactionStatus @default(PENDING)
+  
+  // MFS fields (for deposits & withdrawals)
+  mfsProvider     MfsProvider?
+  accountType     String?           @default("Personal") // Personal | Agent
+  accountNumber   String?           // User's bKash/Nagad number
+  trxId           String?           // Transaction ID from bKash/Nagad SMS
+  adminTrxId      String?           // Payout transaction ID sent by admin
+  
+  note            String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([trxId])
+}
+
+model Notice {
+  id              String           @id @default(uuid())
+  text            String
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+}
+
+model Tutorial {
+  id              String           @id @default(uuid())
+  title           String
+  description     String?
+  videoUrl        String
+  duration        String?
+  thumbnail       String?
+  order           Int              @default(0)
+}
