@@ -33,6 +33,62 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "এই ট্রানজেকশন আইডি ইতিমধ্যে ব্যবহৃত হয়েছে।" }, { status: 409 });
     }
 
+    // Check if SMS already arrived and is unclaimed
+    const matchedSms = await prisma.receivedSms.findFirst({
+      where: {
+        trxId: { equals: trxId.trim(), mode: "insensitive" },
+        isClaimed: false,
+      },
+    });
+
+    if (matchedSms && matchedSms.amount >= depositAmount && matchedSms.mfsProvider === mfsProvider) {
+      // ✅ Instant Auto-Approval via matched pre-received SMS!
+      const [tx] = await prisma.$transaction([
+        prisma.transaction.create({
+          data: {
+            userId: user.id,
+            userName: `${user.firstName} ${user.lastName}`,
+            userPhone: user.phone,
+            type: "DEPOSIT",
+            amount: depositAmount,
+            status: "APPROVED",
+            mfsProvider: mfsProvider as any,
+            accountNumber: senderPhone.trim(),
+            trxId: trxId.trim(),
+            note: `স্বয়ংক্রিয় যাচাই সম্পন্ন (SMS Matching)। TrxID: ${trxId.trim()}`,
+          },
+        }),
+        prisma.user.update({
+          where: { id: user.id },
+          data: { mainBalance: { increment: depositAmount } },
+        }),
+        prisma.receivedSms.update({
+          where: { id: matchedSms.id },
+          data: {
+            isClaimed: true,
+            claimedBy: user.id,
+            claimedAt: new Date(),
+          },
+        }),
+        prisma.notification.create({
+          data: {
+            userId: user.id,
+            title: `✅ ডিপোজিট অনুমোদিত — ৳${depositAmount}`,
+            message: `আপনার ৳${depositAmount} ${mfsProvider} ডিপোজিট (TrxID: ${trxId.trim()}) স্বয়ংক্রিয়ভাবে অনুমোদিত হয়েছে এবং ব্যালেন্সে যোগ হয়েছে।`,
+            type: "DEPOSIT",
+            link: "/wallet",
+          },
+        }),
+      ]);
+
+      return NextResponse.json({
+        success: true,
+        autoApproved: true,
+        message: `৳${depositAmount} ডিপোজিট তাত্ক্ষণিকভাবে স্বয়ংক্রিয়ভাবে অনুমোদিত হয়েছে এবং আপনার ব্যালেন্সে যোগ করা হয়েছে!`,
+        transaction: { id: tx.id, amount: tx.amount, status: tx.status },
+      });
+    }
+
     const transaction = await prisma.transaction.create({
       data: {
         userId: user.id,

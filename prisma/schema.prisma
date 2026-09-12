@@ -151,3 +151,19 @@ model Notification {
 
   @@index([userId])
 }
+
+model ReceivedSms {
+  id          String      @id @default(uuid())
+  trxId       String      @unique
+  mfsProvider MfsProvider
+  amount      Float
+  senderPhone String?
+  rawMessage  String
+  isClaimed   Boolean     @default(false)
+  claimedBy   String?
+  claimedAt   DateTime?
+  createdAt   DateTime    @default(now())
+
+  @@index([trxId])
+  @@index([isClaimed])
+}
