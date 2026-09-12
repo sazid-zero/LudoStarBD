@@ -125,7 +125,7 @@ export default function DashboardPage() {
   const totalBalance = (user?.mainBalance || 0) + (user?.winBalance || 0);
 
   return (
-    <AppShell title="LudoEarn">
+    <AppShell title="LudoStar BD">
       {/* Announcement Ticker (Clickable to open full Notice) */}
       <div
         onClick={() => setNoticeModalOpen(true)}

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
 
 export async function GET() {
@@ -7,18 +7,43 @@ export async function GET() {
     const user = await getSessionUser();
     if (!user) {
       // Unauthenticated: return global announcements only
-      const globalNotifs = db.getNotifications("ALL");
+      const globalNotifs = await prisma.notification.findMany({
+        where: { userId: "ALL" },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      });
+
       return NextResponse.json({
-        notifications: globalNotifs,
+        notifications: globalNotifs.map((n) => ({
+          ...n,
+          createdAt: n.createdAt.toISOString(),
+        })),
         unreadCount: 0,
       });
     }
 
-    const notifs = db.getNotifications(user.id);
-    const unreadCount = notifs.filter((n) => !n.isRead).length;
+    const notifs = await prisma.notification.findMany({
+      where: {
+        OR: [{ userId: user.id }, { userId: "ALL" }],
+      },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+
+    const mappedNotifs = notifs.map((n) => {
+      const isRead =
+        n.userId === "ALL" ? (n.readByUsers || []).includes(user.id) : n.isRead;
+      return {
+        ...n,
+        isRead,
+        createdAt: n.createdAt.toISOString(),
+      };
+    });
+
+    const unreadCount = mappedNotifs.filter((n) => !n.isRead).length;
 
     return NextResponse.json({
-      notifications: notifs,
+      notifications: mappedNotifs,
       unreadCount,
     });
   } catch (error) {
@@ -41,9 +66,44 @@ export async function POST(request: Request) {
       }
 
       if (action === "MARK_READ" && targetId) {
-        db.markNotificationAsRead(targetId, user.id);
+        const notif = await prisma.notification.findUnique({
+          where: { id: targetId },
+        });
+        if (notif) {
+          if (notif.userId === "ALL") {
+            const current = notif.readByUsers || [];
+            if (!current.includes(user.id)) {
+              await prisma.notification.update({
+                where: { id: targetId },
+                data: { readByUsers: [...current, user.id] },
+              });
+            }
+          } else {
+            await prisma.notification.update({
+              where: { id: targetId },
+              data: { isRead: true },
+            });
+          }
+        }
       } else {
-        db.markAllNotificationsAsRead(user.id);
+        // Mark all as read
+        await prisma.notification.updateMany({
+          where: { userId: user.id, isRead: false },
+          data: { isRead: true },
+        });
+
+        const allNotifs = await prisma.notification.findMany({
+          where: { userId: "ALL" },
+        });
+        for (const n of allNotifs) {
+          const current = n.readByUsers || [];
+          if (!current.includes(user.id)) {
+            await prisma.notification.update({
+              where: { id: n.id },
+              data: { readByUsers: [...current, user.id] },
+            });
+          }
+        }
       }
 
       return NextResponse.json({ success: true, message: "পঠিত হিসেবে চিহ্নিত করা হয়েছে।" });
@@ -62,25 +122,40 @@ export async function POST(request: Request) {
       const cleanTitle = title.trim();
       const cleanMessage = message.trim();
 
-      const newNotif = db.createNotification({
-        id: `notif-${Date.now()}-all`,
-        userId: "ALL",
-        title: cleanTitle,
-        message: cleanMessage,
-        type: "ANNOUNCEMENT",
-        link: link?.trim() || null,
-        isRead: false,
-        readByUsers: [],
-        createdAt: new Date().toISOString(),
+      const newNotif = await prisma.notification.create({
+        data: {
+          userId: "ALL",
+          title: cleanTitle,
+          message: cleanMessage,
+          type: "ANNOUNCEMENT",
+          link: link?.trim() || null,
+          isRead: false,
+          readByUsers: [],
+        },
       });
 
       // Also sync with dashboard ticker
-      db.updateNotice(cleanMessage);
+      const existingNotice = await prisma.notice.findFirst({
+        where: { isActive: true },
+      });
+      if (existingNotice) {
+        await prisma.notice.update({
+          where: { id: existingNotice.id },
+          data: { text: cleanMessage },
+        });
+      } else {
+        await prisma.notice.create({
+          data: { text: cleanMessage, isActive: true },
+        });
+      }
 
       return NextResponse.json({
         success: true,
         message: "সকল ইউজারের কাছে নোটিফিকেশন সম্প্রচার করা হয়েছে!",
-        notification: newNotif,
+        notification: {
+          ...newNotif,
+          createdAt: newNotif.createdAt.toISOString(),
+        },
       });
     }
 
@@ -105,11 +180,8 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "নোটিফিকেশন আইডি প্রয়োজন।" }, { status: 400 });
     }
 
-    const ok = db.deleteNotification(id);
-    if (ok) {
-      return NextResponse.json({ success: true, message: "নোটিফিকেশন মুছে ফেলা হয়েছে।" });
-    }
-    return NextResponse.json({ error: "নোটিফিকেশন পাওয়া যায়নি।" }, { status: 404 });
+    await prisma.notification.delete({ where: { id } });
+    return NextResponse.json({ success: true, message: "নোটিফিকেশন মুছে ফেলা হয়েছে।" });
   } catch (error) {
     console.error("Delete notification error:", error);
     return NextResponse.json({ error: "নোটিফিকেশন মুছে ফেলা সম্ভব হয়নি।" }, { status: 500 });

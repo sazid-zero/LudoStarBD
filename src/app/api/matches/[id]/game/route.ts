@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { readDb } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import fs from "fs";
 import path from "path";
 
-const GAMES_DIR = path.join(process.cwd(), ".data", "games");
+const isServerless =
+  process.env.VERCEL === "1" ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined ||
+  (process.env.NODE_ENV === "production" && !process.env.LOCAL_DEV);
+const DATA_DIR = isServerless ? path.join("/tmp", ".data") : path.join(process.cwd(), ".data");
+const GAMES_DIR = path.join(DATA_DIR, "games");
 
 function ensureGamesDir() {
   if (!fs.existsSync(GAMES_DIR)) {
@@ -18,8 +23,10 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const db = readDb();
-    const match = db.matches.find((m) => m.id === id);
+    const match = await prisma.match.findUnique({
+      where: { id },
+    });
+
     if (!match) {
       return NextResponse.json({ error: "ম্যাচ পাওয়া যায়নি" }, { status: 404 });
     }
@@ -33,8 +40,12 @@ export async function GET(
     }
 
     return NextResponse.json({
-      match,
-      gameState
+      match: {
+        ...match,
+        createdAt: match.createdAt.toISOString(),
+        updatedAt: match.updatedAt.toISOString(),
+      },
+      gameState,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "সমস্যা হয়েছে" }, { status: 500 });
@@ -55,8 +66,10 @@ export async function POST(
     const body = await request.json();
     const { gameState } = body;
 
-    const db = readDb();
-    const match = db.matches.find((m) => m.id === id);
+    const match = await prisma.match.findUnique({
+      where: { id },
+    });
+
     if (!match) {
       return NextResponse.json({ error: "ম্যাচ পাওয়া যায়নি" }, { status: 404 });
     }

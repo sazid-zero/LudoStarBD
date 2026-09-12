@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
 
 export async function GET() {
@@ -9,14 +9,16 @@ export async function GET() {
       return NextResponse.json({ error: "অননুমোদিত এক্সেস। এডমিন একাউন্টে লগইন করুন।" }, { status: 403 });
     }
 
-    const allUsers = db.getUsers();
-    const allMatches = db.getMatches();
-    const allTransactions = db.getTransactions();
-    const activeNotice = db.getActiveNotice();
+    const [allUsers, allMatches, allTransactions, activeNotice] = await Promise.all([
+      prisma.user.findMany(),
+      prisma.match.findMany({ orderBy: { createdAt: "desc" } }),
+      prisma.transaction.findMany({ orderBy: { createdAt: "desc" } }),
+      prisma.notice.findFirst({ where: { isActive: true }, orderBy: { createdAt: "desc" } }),
+    ]);
 
-    // Deposits breakdown (includes both wallet deposits and direct match join payments)
+    // Only count wallet DEPOSIT requests as pending deposits (not MATCH_FEE)
     const allPendingPayments = allTransactions.filter(
-      (t) => (t.type === "DEPOSIT" || t.type === "MATCH_FEE") && t.status === "PENDING"
+      (t) => t.type === "DEPOSIT" && t.status === "PENDING"
     );
     const approvedDeposits = allTransactions.filter(
       (t) => t.type === "DEPOSIT" && t.status === "APPROVED"

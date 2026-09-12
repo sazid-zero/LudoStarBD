@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getSessionUser, hashPassword } from "@/lib/auth";
 
 export async function GET(request: Request) {
@@ -10,48 +10,57 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const search = (searchParams.get("search") || "").trim().toLowerCase();
+    const search = (searchParams.get("search") || "").trim();
     const role = searchParams.get("role") || "ALL";
     const status = searchParams.get("status") || "ALL";
 
-    let allUsers = db.getUsers();
+    const where: any = {};
 
     if (role !== "ALL") {
-      allUsers = allUsers.filter((u) => u.role === role);
+      where.role = role;
     }
 
     if (status === "ACTIVE") {
-      allUsers = allUsers.filter((u) => !u.isBanned);
+      where.isBanned = false;
     } else if (status === "BANNED") {
-      allUsers = allUsers.filter((u) => u.isBanned);
+      where.isBanned = true;
     }
 
     if (search) {
-      allUsers = allUsers.filter((u) => {
-        const phoneMatch = u.phone?.toLowerCase().includes(search);
-        const nameMatch = `${u.firstName} ${u.lastName}`.toLowerCase().includes(search);
-        const referMatch = u.referCode?.toLowerCase().includes(search);
-        return phoneMatch || nameMatch || referMatch;
-      });
+      where.OR = [
+        { phone: { contains: search, mode: "insensitive" } },
+        { firstName: { contains: search, mode: "insensitive" } },
+        { lastName: { contains: search, mode: "insensitive" } },
+        { referCode: { contains: search, mode: "insensitive" } },
+      ];
     }
+
+    const allUsers = await prisma.user.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
 
     const sanitized = allUsers.map((u) => ({
       id: u.id,
       phone: u.phone,
-      name: `${u.firstName} ${u.lastName}`,
+      name: `${u.firstName} ${u.lastName}`.trim(),
       role: u.role,
       mainBalance: u.mainBalance,
       winBalance: u.winBalance,
       referCode: u.referCode,
       referredBy: u.referredBy,
       isBanned: u.isBanned,
-      createdAt: u.createdAt,
+      createdAt: u.createdAt.toISOString(),
     }));
+
+    const bannedCount = await prisma.user.count({
+      where: { isBanned: true },
+    });
 
     return NextResponse.json({
       users: sanitized,
       totalCount: sanitized.length,
-      bannedCount: sanitized.filter((u) => u.isBanned).length,
+      bannedCount,
     });
   } catch (error) {
     console.error("Admin users fetch error:", error);
@@ -69,7 +78,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { userId, action, amount, balanceType, note, newPassword, newRole } = body;
 
-    const targetUser = db.findUserById(userId);
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
     if (!targetUser) {
       return NextResponse.json({ error: "ইউজার পাওয়া যায়নি।" }, { status: 404 });
     }
@@ -80,13 +92,20 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "এডমিন একাউন্ট ব্যান করা যাবে না।" }, { status: 400 });
       }
 
-      const updated = db.updateUser(userId, { isBanned: !targetUser.isBanned });
+      const updated = await prisma.user.update({
+        where: { id: userId },
+        data: { isBanned: !targetUser.isBanned },
+      });
+
       return NextResponse.json({
         success: true,
-        message: updated?.isBanned
+        message: updated.isBanned
           ? `${targetUser.firstName}-এর একাউন্ট সাময়িকভাবে নিষিদ্ধ (Banned) করা হয়েছে।`
           : `${targetUser.firstName}-এর একাউন্ট সফলভাবে সক্রিয় (Unbanned) করা হয়েছে।`,
-        user: updated,
+        user: {
+          ...updated,
+          createdAt: updated.createdAt.toISOString(),
+        },
       });
     }
 
@@ -104,28 +123,33 @@ export async function POST(request: Request) {
         updates.winBalance = Math.max(0, targetUser.winBalance + numAmount);
       }
 
-      const updated = db.updateUser(userId, updates);
-
-      // Record transaction
-      db.createTransaction({
-        id: `trx-${Date.now()}-adj`,
-        userId: targetUser.id,
-        userName: `${targetUser.firstName} ${targetUser.lastName}`,
-        userPhone: targetUser.phone,
-        type: numAmount >= 0 ? "DEPOSIT" : "WITHDRAW",
-        amount: Math.abs(numAmount),
-        status: "APPROVED",
-        note:
-          note?.trim() ||
-          `এডমিন ব্যালেন্স সমন্বয় (${balanceType === "MAIN" ? "মেইন" : "উইনিং"} ${numAmount >= 0 ? "+" : ""}${numAmount})`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+      const [updated] = await prisma.$transaction([
+        prisma.user.update({
+          where: { id: userId },
+          data: updates,
+        }),
+        prisma.transaction.create({
+          data: {
+            userId: targetUser.id,
+            userName: `${targetUser.firstName} ${targetUser.lastName}`.trim(),
+            userPhone: targetUser.phone,
+            type: numAmount >= 0 ? "DEPOSIT" : "WITHDRAW",
+            amount: Math.abs(numAmount),
+            status: "APPROVED",
+            note:
+              note?.trim() ||
+              `এডমিন ব্যালেন্স সমন্বয় (${balanceType === "MAIN" ? "মেইন" : "উইনিং"} ${numAmount >= 0 ? "+" : ""}${numAmount})`,
+          },
+        }),
+      ]);
 
       return NextResponse.json({
         success: true,
         message: `${targetUser.firstName}-এর ${balanceType === "MAIN" ? "মেইন" : "উইনিং"} ব্যালেন্স সফলভাবে সমন্বয় করা হয়েছে!`,
-        user: updated,
+        user: {
+          ...updated,
+          createdAt: updated.createdAt.toISOString(),
+        },
       });
     }
 
@@ -135,11 +159,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "সঠিক রোল নির্ধারণ করুন।" }, { status: 400 });
       }
 
-      const updated = db.updateUser(userId, { role: newRole });
+      const updated = await prisma.user.update({
+        where: { id: userId },
+        data: { role: newRole as any },
+      });
+
       return NextResponse.json({
         success: true,
         message: `${targetUser.firstName}-এর রোল "${newRole}" নির্ধারণ করা হয়েছে।`,
-        user: updated,
+        user: {
+          ...updated,
+          createdAt: updated.createdAt.toISOString(),
+        },
       });
     }
 
@@ -150,7 +181,10 @@ export async function POST(request: Request) {
       }
 
       const passwordHash = hashPassword(newPassword.trim());
-      db.updateUser(userId, { passwordHash });
+      await prisma.user.update({
+        where: { id: userId },
+        data: { passwordHash },
+      });
 
       return NextResponse.json({
         success: true,

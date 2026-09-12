@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
 
 export async function GET(request: Request) {
@@ -12,41 +12,46 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status") || "ALL";
     const mfs = searchParams.get("mfs") || "ALL";
-    const search = (searchParams.get("search") || "").trim().toLowerCase();
+    const search = (searchParams.get("search") || "").trim();
 
-    let allWithdrawals = db
-      .getTransactions()
-      .filter((t) => t.type === "WITHDRAW");
+    const where: any = { type: "WITHDRAW" };
 
     if (status !== "ALL") {
-      allWithdrawals = allWithdrawals.filter((t) => t.status === status);
+      where.status = status;
     }
 
     if (mfs !== "ALL") {
-      allWithdrawals = allWithdrawals.filter((t) => t.mfsProvider === mfs);
+      where.mfsProvider = mfs;
     }
 
     if (search) {
-      allWithdrawals = allWithdrawals.filter((t) => {
-        const phoneMatch = t.userPhone?.toLowerCase().includes(search);
-        const nameMatch = t.userName?.toLowerCase().includes(search);
-        const accountMatch = t.accountNumber?.toLowerCase().includes(search);
-        const adminTrxMatch = t.adminTrxId?.toLowerCase().includes(search);
-        return phoneMatch || nameMatch || accountMatch || adminTrxMatch;
-      });
+      where.OR = [
+        { userPhone: { contains: search, mode: "insensitive" } },
+        { userName: { contains: search, mode: "insensitive" } },
+        { accountNumber: { contains: search, mode: "insensitive" } },
+        { adminTrxId: { contains: search, mode: "insensitive" } },
+      ];
     }
 
-    const pendingCount = db.getTransactions().filter((t) => t.type === "WITHDRAW" && t.status === "PENDING").length;
-    const paidTotal = db
-      .getTransactions()
-      .filter((t) => t.type === "WITHDRAW" && t.status === "APPROVED")
-      .reduce((sum, t) => sum + t.amount, 0);
+    const [allWithdrawals, pendingCount, paidAggregate] = await Promise.all([
+      prisma.transaction.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.transaction.count({
+        where: { type: "WITHDRAW", status: "PENDING" },
+      }),
+      prisma.transaction.aggregate({
+        where: { type: "WITHDRAW", status: "APPROVED" },
+        _sum: { amount: true },
+      }),
+    ]);
 
     return NextResponse.json({
       withdrawals: allWithdrawals,
       totalCount: allWithdrawals.length,
       pendingCount,
-      paidTotal,
+      paidTotal: paidAggregate._sum.amount || 0,
     });
   } catch (error) {
     console.error("Admin withdrawals fetch error:", error);
@@ -68,7 +73,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "সঠিক ট্রানজেকশন ও অ্যাকশন প্রদান করুন।" }, { status: 400 });
     }
 
-    const transaction = db.findTransactionById(transactionId);
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
+    });
+
     if (!transaction || transaction.type !== "WITHDRAW") {
       return NextResponse.json({ error: "উইথড্র ট্রানজেকশন পাওয়া যায়নি।" }, { status: 404 });
     }
@@ -77,23 +85,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "এই ট্রানজেকশনটি ইতিপূর্বেই নিষ্পত্তি করা হয়েছে।" }, { status: 400 });
     }
 
-    const targetUser = db.findUserById(transaction.userId);
-
     if (action === "APPROVE") {
       const finalTrxId = adminTrxId?.trim() || `PAY-${Date.now().toString().slice(-6)}`;
-      const updated = db.updateTransaction(transactionId, {
-        status: "APPROVED",
-        adminTrxId: finalTrxId,
-        note: `এডমিন কর্তৃক পেইড। Payout TrxID: ${finalTrxId}`,
+      const updated = await prisma.transaction.update({
+        where: { id: transactionId },
+        data: {
+          status: "APPROVED",
+          adminTrxId: finalTrxId,
+          note: `এডমিন কর্তৃক পেইড। Payout TrxID: ${finalTrxId}`,
+        },
       });
 
       // Send in-app notification
-      db.createNotification({
-        userId: transaction.userId,
-        title: "💸 উইথড্র সফলভাবে প্রদান করা হয়েছে!",
-        message: `আপনার ৳${transaction.amount} উইথড্র (${transaction.mfsProvider || "MFS"}) সম্পন্ন হয়েছে। Payout TrxID: ${finalTrxId}।`,
-        type: "SUCCESS",
-        link: "/wallet",
+      await prisma.notification.create({
+        data: {
+          userId: transaction.userId,
+          title: "💸 উইথড্র সফলভাবে প্রদান করা হয়েছে!",
+          message: `আপনার ৳${transaction.amount} উইথড্র (${transaction.mfsProvider || "MFS"}) সম্পন্ন হয়েছে। Payout TrxID: ${finalTrxId}।`,
+          type: "SUCCESS",
+          link: "/wallet",
+        },
       });
 
       return NextResponse.json({
@@ -102,26 +113,36 @@ export async function POST(request: Request) {
         transaction: updated,
       });
     } else {
-      // Refund money back to user's winBalance
-      if (targetUser) {
-        db.updateUser(targetUser.id, {
-          winBalance: targetUser.winBalance + transaction.amount,
-        });
-      }
-
+      // Refund money back to user's winBalance atomically with status update
       const rejectNote = reason?.trim() || "উইথড্র বাতিল করা হয়েছে এবং টাকা একাউন্টে ফেরত দেওয়া হয়েছে।";
-      const updated = db.updateTransaction(transactionId, {
-        status: "REJECTED",
-        note: rejectNote,
-      });
+
+      const [, updated] = await prisma.$transaction([
+        prisma.user.update({
+          where: { id: transaction.userId },
+          data: {
+            winBalance: {
+              increment: transaction.amount,
+            },
+          },
+        }),
+        prisma.transaction.update({
+          where: { id: transactionId },
+          data: {
+            status: "REJECTED",
+            note: rejectNote,
+          },
+        }),
+      ]);
 
       // Send in-app notification
-      db.createNotification({
-        userId: transaction.userId,
-        title: "❌ উইথড্র বাতিল ও ব্যালেন্স রিফান্ড",
-        message: `আপনার ৳${transaction.amount} উইথড্র বাতিল হয়েছে এবং টাকা উইনিং ব্যালেন্সে ফেরত দেওয়া হয়েছে। কারণ: ${rejectNote}`,
-        type: "ALERT",
-        link: "/wallet",
+      await prisma.notification.create({
+        data: {
+          userId: transaction.userId,
+          title: "❌ উইথড্র বাতিল ও ব্যালেন্স রিফান্ড",
+          message: `আপনার ৳${transaction.amount} উইথড্র বাতিল হয়েছে এবং টাকা উইনিং ব্যালেন্সে ফেরত দেওয়া হয়েছে। কারণ: ${rejectNote}`,
+          type: "ALERT",
+          link: "/wallet",
+        },
       });
 
       return NextResponse.json({

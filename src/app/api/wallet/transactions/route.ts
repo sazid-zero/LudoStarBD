@@ -1,15 +1,27 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
 
 export async function GET() {
   try {
-    const user = await getSessionUser();
-    if (!user) {
+    const sessionUser = await getSessionUser();
+    if (!sessionUser) {
       return NextResponse.json({ error: "অননুমোদিত এক্সেস" }, { status: 401 });
     }
 
-    const transactions = db.getTransactionsByUserId(user.id);
+    const [user, transactions] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: sessionUser.id },
+      }),
+      prisma.transaction.findMany({
+        where: { userId: sessionUser.id },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+
+    if (!user) {
+      return NextResponse.json({ error: "ইউজার পাওয়া যায়নি।" }, { status: 404 });
+    }
 
     return NextResponse.json({
       transactions,

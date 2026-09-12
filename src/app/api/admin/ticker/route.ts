@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
 
 export async function GET() {
   try {
-    const notice = db.getActiveNotice();
+    const notice = await prisma.notice.findFirst({
+      where: { isActive: true },
+      orderBy: { createdAt: "desc" },
+    });
+
     return NextResponse.json({
       notice: notice?.text || "",
       isActive: notice?.isActive ?? true,
@@ -30,17 +34,34 @@ export async function POST(request: Request) {
     }
 
     const cleanText = text.trim();
-    const updated = db.updateNotice(cleanText);
+
+    const existingNotice = await prisma.notice.findFirst({
+      where: { isActive: true },
+    });
+
+    let updated;
+    if (existingNotice) {
+      updated = await prisma.notice.update({
+        where: { id: existingNotice.id },
+        data: { text: cleanText },
+      });
+    } else {
+      updated = await prisma.notice.create({
+        data: { text: cleanText, isActive: true },
+      });
+    }
 
     // Also publish as in-app notification so all users see it in notification list
-    db.createNotification({
-      userId: "ALL",
-      title: "📢 প্ল্যাটফর্ম নোটিশ ও ঘোষণা",
-      message: cleanText,
-      type: "ANNOUNCEMENT",
-      link: "/dashboard",
-      isRead: false,
-      readByUsers: [],
+    await prisma.notification.create({
+      data: {
+        userId: "ALL",
+        title: "📢 প্ল্যাটফর্ম নোটিশ ও ঘোষণা",
+        message: cleanText,
+        type: "ANNOUNCEMENT",
+        link: "/dashboard",
+        isRead: false,
+        readByUsers: [],
+      },
     });
 
     return NextResponse.json({

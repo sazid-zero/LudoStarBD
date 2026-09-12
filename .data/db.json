@@ -35,12 +35,12 @@
       "firstName": "রাকিব",
       "lastName": "হাসান",
       "role": "USER",
-      "mainBalance": 270,
+      "mainBalance": 370,
       "winBalance": 420,
       "referCode": "RAKIB10",
       "isBanned": false,
       "createdAt": "2026-09-10T09:37:19.881Z",
-      "updatedAt": "2026-09-10T09:58:54.572Z"
+      "updatedAt": "2026-09-12T03:45:32.443Z"
     },
     {
       "id": "user-02",
@@ -355,6 +355,21 @@
   ],
   "transactions": [
     {
+      "id": "pp-1789184719723-nb9c",
+      "userId": "user-01",
+      "userName": "রাকিব হাসান",
+      "userPhone": "01711111111",
+      "type": "DEPOSIT",
+      "amount": 100,
+      "status": "APPROVED",
+      "mfsProvider": "PIPRAPAY",
+      "accountNumber": "01711111111",
+      "trxId": "SIM-BKASH-6RJ2YX",
+      "note": "PipraPay অটো ডিপোজিট সফল (TrxID: SIM-BKASH-6RJ2YX)",
+      "createdAt": "2026-09-12T03:45:19.723Z",
+      "updatedAt": "2026-09-12T03:45:32.445Z"
+    },
+    {
       "id": "trx-1789129080620-welcome",
       "userId": "user-1789129080550",
       "userName": "test3 test",
@@ -557,6 +572,17 @@
   ],
   "notifications": [
     {
+      "id": "notif-1789184732447-3llkc",
+      "userId": "user-01",
+      "title": "⚡ ডিপোজিট সফল (অটোমেটিক)!",
+      "message": "PipraPay-এর মাধ্যমে আপনার ৳100 সফলভাবে আপনার মেইন ব্যালেন্সে যুক্ত করা হয়েছে। এখনই ম্যাচে যোগ দিন!",
+      "type": "SUCCESS",
+      "link": "/wallet",
+      "isRead": false,
+      "readByUsers": [],
+      "createdAt": "2026-09-12T03:45:32.447Z"
+    },
+    {
       "id": "notif-1789120029430-dt8hh",
       "userId": "ALL",
       "title": "📢 প্ল্যাটফর্ম নোটিশ ও ঘোষণা",
@@ -625,7 +651,7 @@
       "id": "notif-1789119301785-notice",
       "userId": "ALL",
       "title": "📢 প্ল্যাটফর্ম নোটিশ ও ঘোষণা",
-      "message": "📣 hi, স্বাগতম LudoEarn-এ! বিকাশ, নগদ ও রকেটে দ্রুততম ক্যাশইন ও ক্যাশআউট। খেলা শেষে উইন স্ক্রিনশট অবশ্যই ৫ মিনিটের মধ্যে আপলোড করুন। প্রতারকদের একাউন্ট স্থায়ীভাবে ব্যান করা হবে।",
+      "message": "📣 স্বাগতম LudoStar BD-তে! বিকাশ, নগদ ও রকেটে দ্রুততম ক্যাশইন ও ক্যাশআউট। খেলা শেষে উইন স্ক্রিনশট অবশ্যই ৫ মিনিটের মধ্যে আপলোড করুন। প্রতারকদের একাউন্ট স্থায়ীভাবে ব্যান করা হবে।",
       "type": "ANNOUNCEMENT",
       "link": "/dashboard",
       "isRead": false,

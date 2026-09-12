@@ -14,7 +14,7 @@ interface AppBarProps {
 }
 
 export default function AppBar({
-  title = "LudoEarn",
+  title = "LudoStar BD",
   showBack = false,
   userBalance,
 }: AppBarProps) {
@@ -94,15 +94,15 @@ export default function AppBar({
             ) : (
               <Link href="/dashboard" className="flex items-center gap-1.5 sm:gap-2 select-none">
                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden bg-black/40 border border-sky-400/40 shadow-[0_0_12px_rgba(0,173,181,0.3)] flex items-center justify-center p-0.5 flex-shrink-0">
-                  <Image src="/logo.png" alt="LudoEarn" width={38} height={38} className="object-contain w-full h-full rounded-lg" />
+                  <Image src="/newlogo.png" alt="LudoStar BD" width={38} height={38} className="object-contain w-full h-full rounded-lg" />
                 </div>
                 <div className="flex flex-col leading-none">
                   <span className="text-sm sm:text-base font-black tracking-tight leading-none whitespace-nowrap">
-                    <span className="text-white">Ludo</span>
-                    <span className="text-[#00ADB5]">Earn</span>
+                    <span className="text-white">LudoStar</span>
+                    <span className="text-amber-400"> BD</span>
                   </span>
                   <span className="text-[8px] sm:text-[9px] text-slate-400 tracking-wider font-semibold mt-0.5 hidden xs:block whitespace-nowrap">
-                    Play • Win • Earn
+                    Play • Compete • Win
                   </span>
                 </div>
               </Link>
@@ -142,7 +142,7 @@ export default function AppBar({
 
             {/* WhatsApp Support */}
             <a
-              href={`https://wa.me/88${whatsappNumber}?text=Hello%20LudoEarn%20Support`}
+              href={`https://wa.me/88${whatsappNumber}?text=Hello%20LudoStarBD%20Support`}
               target="_blank"
               rel="noreferrer"
               className="w-7 h-7 sm:w-8 sm:h-8 text-white/90 bg-slate-800/80 border border-slate-700/80 rounded-full hover:bg-slate-700 active:scale-95 transition-all flex items-center justify-center flex-shrink-0"

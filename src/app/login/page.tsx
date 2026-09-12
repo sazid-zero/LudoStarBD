@@ -108,14 +108,14 @@ function LoginForm() {
     <div className="min-h-screen bg-[#0B132B] flex flex-col justify-center max-w-md mx-auto px-5 py-8">
       {/* Brand Header */}
       <div className="text-center mb-8">
-        <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 p-1 mx-auto mb-3 shadow-xl flex items-center justify-center overflow-hidden">
-          <Image src="/logo.png" alt="LudoEarn" width={56} height={56} className="object-contain w-full h-full rounded-xl" />
+        <div className="w-16 h-16 rounded-2xl bg-black/40 border border-amber-400/40 p-1 mx-auto mb-3 shadow-xl flex items-center justify-center overflow-hidden">
+          <Image src="/newlogo.png" alt="LudoStar BD" width={56} height={56} className="object-contain w-full h-full rounded-xl" />
         </div>
         <h1 className="text-2xl font-black text-white tracking-tight">
-          LUDO <span className="text-[#00D2D3]">EARN</span>
+          LudoStar <span className="text-amber-400">BD</span>
         </h1>
         <p className="text-xs text-slate-400 mt-1 font-medium">
-          বাংলাদেশের বিশ্বস্ত লুডো আর্নিং প্ল্যাটফর্ম
+          বাংলাদেশের বিশ্বস্ত লুডো গেমিং প্ল্যাটফর্ম
         </p>
       </div>
 

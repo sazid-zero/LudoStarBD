@@ -746,8 +746,8 @@ function AdminDashboard() {
           <div className="relative">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0d1527] to-[#121d33] border border-cyan-500/30 p-1 flex items-center justify-center shadow-lg shadow-cyan-500/10">
               <Image
-                src="/logo.png"
-                alt="LudoEarn"
+                src="/newlogo.png"
+                alt="LudoStar BD"
                 width={36}
                 height={36}
                 className="object-contain w-full h-full"
@@ -758,7 +758,7 @@ function AdminDashboard() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-base font-extrabold text-white tracking-wide">
-                LudoEarn Admin Suite
+                LudoStar BD Admin Suite
               </h1>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
                 PRO PANEL

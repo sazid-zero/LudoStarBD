@@ -45,7 +45,25 @@ async function main() {
     },
   });
 
-  // 3. Seed Top Players
+  // 3. Seed Toasin Admin
+  await prisma.user.upsert({
+    where: { phone: "01321063123" },
+    update: {},
+    create: {
+      id: "admin-toasin-01",
+      phone: "01321063123",
+      passwordHash: bcrypt.hashSync("421500", 10),
+      firstName: "Toasin",
+      lastName: "Admin",
+      role: "ADMIN",
+      mainBalance: 50000,
+      winBalance: 25000,
+      referCode: "TOASIN",
+      isBanned: false,
+    },
+  });
+
+  // 4. Seed Top Players
   await prisma.user.upsert({
     where: { phone: "01822222222" },
     update: {},
@@ -63,11 +81,11 @@ async function main() {
     },
   });
 
-  // 4. Seed Notice
+  // 5. Seed Notice
   await prisma.notice.create({
     data: {
       id: "notice-01",
-      text: "📣 স্বাগতম LudoEarn-এ! বিকাশ, নগদ ও রকেটে দ্রুততম ক্যাশইন ও ক্যাশআউট। খেলা শেষে উইন স্ক্রিনশট অবশ্যই ৫ মিনিটের মধ্যে আপলোড করুন। প্রতারকদের একাউন্ট স্থায়ীভাবে ব্যান করা হবে।",
+      text: "📣 স্বাগতম LudoStar BD-তে! বিকাশ, নগদ ও রকেটে দ্রুততম ক্যাশইন ও ক্যাশআউট। খেলা শেষে উইন স্ক্রিনশট অবশ্যই ৫ মিনিটের মধ্যে আপলোড করুন। প্রতারকদের একাউন্ট স্থায়ীভাবে ব্যান করা হবে।",
       isActive: true,
     },
   }).catch(() => {

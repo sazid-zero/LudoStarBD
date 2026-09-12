@@ -6,7 +6,20 @@ export type TransactionType = "DEPOSIT" | "WITHDRAW" | "MATCH_FEE" | "MATCH_WIN"
 
 export type TransactionStatus = "PENDING" | "APPROVED" | "REJECTED";
 
-export type MfsProvider = "BKASH" | "NAGAD" | "ROCKET" | "UPAY";
+export type MfsProvider = "BKASH" | "NAGAD" | "ROCKET";
+
+
+export interface MatchPlayer {
+  userId: string;
+  name: string;
+  phone: string;
+  slot: number; // 1, 2, 3, or 4
+  isHost: boolean;
+  joinedAt: string;
+  mfsProvider?: string | null;
+  result?: "WON" | "LOST" | "DISPUTE" | null;
+  proofUrl?: string | null;
+}
 
 export interface User {
   id: string;
@@ -33,6 +46,8 @@ export interface Match {
   prize: number;
   matchType: string;
   status: MatchStatus;
+  maxPlayers?: number; // 2, 3, or 4 (default 2)
+  players?: MatchPlayer[];
   roomCode?: string | null;
   creatorId?: string | null;
   creatorPhone?: string | null;

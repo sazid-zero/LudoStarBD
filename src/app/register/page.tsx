@@ -76,8 +76,8 @@ function RegisterForm() {
     <div className="min-h-screen bg-[#0B132B] flex flex-col justify-center max-w-md mx-auto px-5 py-8">
       {/* Brand Header */}
       <div className="text-center mb-6">
-        <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 p-1 mx-auto mb-2.5 shadow-xl flex items-center justify-center overflow-hidden">
-          <Image src="/logo.png" alt="LudoEarn" width={48} height={48} className="object-contain w-full h-full rounded-xl" />
+        <div className="w-14 h-14 rounded-2xl bg-black/40 border border-amber-400/40 p-1 mx-auto mb-2.5 shadow-xl flex items-center justify-center overflow-hidden">
+          <Image src="/newlogo.png" alt="LudoStar BD" width={48} height={48} className="object-contain w-full h-full rounded-xl" />
         </div>
         <h1 className="text-xl font-black text-white tracking-tight">
           নতুন একাউন্ট তৈরি করুন

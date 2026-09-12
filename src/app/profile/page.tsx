@@ -209,7 +209,7 @@ export default function ProfilePage() {
           </Link>
 
           <a
-            href={`https://wa.me/88${whatsappNumber}?text=Hello%20LudoEarn%20Support`}
+            href={`https://wa.me/88${whatsappNumber}?text=Hello%20LudoStarBD%20Support`}
             target="_blank"
             rel="noreferrer"
             className="flex items-center justify-between p-3.5 hover:bg-slate-850 text-slate-300 transition-colors"

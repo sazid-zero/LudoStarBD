@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
-    const user = await getSessionUser();
-    if (!user) {
+    const sessionUser = await getSessionUser();
+    if (!sessionUser) {
       return NextResponse.json({ error: "অননুমোদিত এক্সেস। লগইন করুন।" }, { status: 401 });
+    }
+
+    // Refresh user from database to ensure fresh balance
+    const user = await prisma.user.findUnique({
+      where: { id: sessionUser.id },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "ইউজার পাওয়া যায়নি।" }, { status: 404 });
     }
 
     const body = await request.json();
@@ -28,7 +37,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!mfsProvider || !["BKASH", "NAGAD", "ROCKET", "UPAY"].includes(mfsProvider)) {
+    if (!mfsProvider || !["BKASH", "NAGAD", "ROCKET"].includes(mfsProvider)) {
       return NextResponse.json(
         { error: "সঠিক পেমেন্ট মেথড নির্বাচন করুন (বিকাশ, নগদ, অথবা রকেট)।" },
         { status: 400 }
@@ -47,28 +56,33 @@ export async function POST(request: Request) {
     const agentFee = isAgent ? 20 : 0;
     const netPayable = Math.max(0, withdrawAmount - agentFee);
 
-    // Deduct immediately from winBalance
-    db.updateUser(user.id, {
-      winBalance: user.winBalance - withdrawAmount,
-    });
-
-    const transaction = db.createTransaction({
-      id: `trx-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-      userId: user.id,
-      userName: `${user.firstName} ${user.lastName}`,
-      userPhone: user.phone,
-      type: "WITHDRAW",
-      amount: withdrawAmount,
-      status: "PENDING",
-      mfsProvider,
-      accountType,
-      accountNumber: accountNumber.trim(),
-      note: isAgent
-        ? `${mfsProvider} (Agent - ২০ টাকা কর্তন, গ্রাহক পাবেন: ৳${netPayable})`
-        : `${mfsProvider} (${accountType}) উইথড্র প্রক্রিয়াধীন`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+    // Run balance deduction and transaction creation atomically
+    const [updatedUser, transaction] = await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: {
+          winBalance: {
+            decrement: withdrawAmount,
+          },
+        },
+      }),
+      prisma.transaction.create({
+        data: {
+          userId: user.id,
+          userName: `${user.firstName} ${user.lastName}`.trim(),
+          userPhone: user.phone,
+          type: "WITHDRAW",
+          amount: withdrawAmount,
+          status: "PENDING",
+          mfsProvider: mfsProvider as any,
+          accountType,
+          accountNumber: accountNumber.trim(),
+          note: isAgent
+            ? `${mfsProvider} (Agent - ২০ টাকা কর্তন, গ্রাহক পাবেন: ৳${netPayable})`
+            : `${mfsProvider} (${accountType}) উইথড্র প্রক্রিয়াধীন`,
+        },
+      }),
+    ]);
 
     const successMsg = isAgent
       ? `৳${withdrawAmount} উইথড্র রিকোয়েস্ট সফল! এজেন্ট ক্যাশআউট ফি ২০ টাকা কর্তনের পর আপনি পাবেন ৳${netPayable}। শীঘ্রই টাকা পাঠানো হবে।`
@@ -80,7 +94,7 @@ export async function POST(request: Request) {
       transaction,
       netPayable,
       agentFee,
-      remainingWinBalance: user.winBalance - withdrawAmount,
+      remainingWinBalance: updatedUser.winBalance,
     });
   } catch (error) {
     console.error("Withdraw error:", error);

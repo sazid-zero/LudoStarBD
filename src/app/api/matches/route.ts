@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
+import { MatchPlayer } from "@/lib/types";
 
 export async function GET(request: Request) {
   try {
@@ -8,30 +9,53 @@ export async function GET(request: Request) {
     const status = searchParams.get("status");
     const myOnly = searchParams.get("myOnly") === "true";
 
-    let matches = db.getMatches();
     const currentUser = await getSessionUser();
 
+    const where: any = {};
+    if (status) {
+      where.status = status.toUpperCase();
+    }
+
+    let matches = await prisma.match.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
+
     if (myOnly && currentUser) {
-      matches = matches.filter(
-        (m) => m.creatorId === currentUser.id || m.opponentId === currentUser.id
-      );
-    } else if (status) {
-      matches = matches.filter((m) => m.status.toLowerCase() === status.toLowerCase());
+      matches = matches.filter((m) => {
+        const players = (m.players as unknown as MatchPlayer[]) || [];
+        return (
+          m.creatorId === currentUser.id ||
+          m.opponentId === currentUser.id ||
+          players.some((p) => p.userId === currentUser.id)
+        );
+      });
     }
 
     // Room ID is strictly hidden from non-participants
     const sanitizedMatches = matches.map((m) => {
+      const players = (m.players as unknown as MatchPlayer[]) || [];
       const isParticipant =
-        currentUser && (m.creatorId === currentUser.id || m.opponentId === currentUser.id);
+        currentUser &&
+        (m.creatorId === currentUser.id ||
+          m.opponentId === currentUser.id ||
+          players.some((p) => p.userId === currentUser.id));
       const isAdmin = currentUser && currentUser.role === "ADMIN";
+
       return {
         ...m,
         roomCode: isParticipant || isAdmin ? m.roomCode : null,
+        players,
+        createdAt: m.createdAt.toISOString(),
+        updatedAt: m.updatedAt.toISOString(),
       };
     });
 
     // Attach active notice
-    const notice = db.getActiveNotice();
+    const notice = await prisma.notice.findFirst({
+      where: { isActive: true },
+      orderBy: { createdAt: "desc" },
+    });
 
     return NextResponse.json({
       matches: sanitizedMatches,
@@ -45,18 +69,28 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const user = await getSessionUser();
-    if (!user) {
+    const sessionUser = await getSessionUser();
+    if (!sessionUser) {
       return NextResponse.json({ error: "অননুমোদিত এক্সেস। লগইন করুন।" }, { status: 401 });
     }
 
+    const user = await prisma.user.findUnique({
+      where: { id: sessionUser.id },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "ইউজার পাওয়া যায়নি।" }, { status: 404 });
+    }
+
     const body = await request.json();
-    const { entryFee, matchType = "1v1 Classic" } = body;
+    const { entryFee, matchType = "1v1 Classic", roomCode } = body;
 
     const fee = Number(entryFee);
     if (!fee || fee < 10) {
       return NextResponse.json({ error: "সঠিক এন্ট্রি ফি নির্ধারণ করুন (কমপক্ষে ১০ টাকা)।" }, { status: 400 });
     }
+
+    const playersCount = 2; // Strictly 1v1
 
     // Calculate total available balance
     const totalBalance = user.mainBalance + user.winBalance;
@@ -68,53 +102,75 @@ export async function POST(request: Request) {
     }
 
     // Deduct fee: first from mainBalance, then remainder from winBalance
-    let deductMain = Math.min(user.mainBalance, fee);
-    let deductWin = fee - deductMain;
+    const deductMain = Math.min(user.mainBalance, fee);
+    const deductWin = fee - deductMain;
 
-    db.updateUser(user.id, {
-      mainBalance: user.mainBalance - deductMain,
-      winBalance: user.winBalance - deductWin,
-    });
+    // 10% platform commission: totalPot (fee * 2) * 0.9
+    const totalPot = fee * 2;
+    const prize = Math.round(totalPot * 0.9);
 
-    // 10% platform commission: 2 players fee * 0.9 = 1.8x
-    const prize = Math.round(fee * 2 * 0.9);
-
-    const matchesCount = db.getMatches().length;
+    const matchesCount = await prisma.match.count();
     const matchNo = 2000 + matchesCount + 1;
 
-    const newMatch = db.createMatch({
-      id: `match-${Date.now()}`,
-      matchNo,
-      title: `১ বনাম ১ ক্লাসিক ম্যাচ #${matchNo}`,
-      entryFee: fee,
-      prize,
-      matchType,
-      status: "WAITING",
-      creatorId: user.id,
-      creatorPhone: user.phone,
-      creatorName: `${user.firstName} ${user.lastName}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+    const cleanRoomCode = roomCode ? String(roomCode).trim().replace(/\s+/g, "") : null;
+    const userName = `${user.firstName} ${user.lastName}`.trim() || user.phone;
+    const modeTitle = `১ বনাম ১ ম্যাচ #${matchNo}`;
 
-    // Create transaction record for entry fee
-    db.createTransaction({
-      id: `trx-${Date.now()}-fee`,
+    const initialPlayer: MatchPlayer = {
       userId: user.id,
-      userName: `${user.firstName} ${user.lastName}`,
-      userPhone: user.phone,
-      type: "MATCH_FEE",
-      amount: fee,
-      status: "APPROVED",
-      note: `ম্যাচ #${matchNo} এন্ট্রি ফি কাটা হয়েছে`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+      name: userName,
+      phone: user.phone,
+      slot: 1,
+      isHost: true,
+      joinedAt: new Date().toISOString(),
+    };
+
+    const [updatedUser, newMatch] = await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: {
+          mainBalance: { decrement: deductMain },
+          winBalance: { decrement: deductWin },
+        },
+      }),
+      prisma.match.create({
+        data: {
+          matchNo,
+          title: modeTitle,
+          entryFee: fee,
+          prize,
+          matchType,
+          maxPlayers: playersCount,
+          roomCode: cleanRoomCode,
+          status: "WAITING",
+          creatorId: user.id,
+          creatorPhone: user.phone,
+          creatorName: userName,
+          players: [initialPlayer] as any,
+        },
+      }),
+      prisma.transaction.create({
+        data: {
+          userId: user.id,
+          userName,
+          userPhone: user.phone,
+          type: "MATCH_FEE",
+          amount: fee,
+          status: "APPROVED",
+          note: `ম্যাচ #${matchNo} এন্ট্রি ফি কাটা হয়েছে`,
+        },
+      }),
+    ]);
 
     return NextResponse.json({
       success: true,
       message: "ম্যাচ সফলভাবে তৈরি হয়েছে!",
-      match: newMatch,
+      match: {
+        ...newMatch,
+        players: (newMatch.players as unknown as MatchPlayer[]) || [],
+        createdAt: newMatch.createdAt.toISOString(),
+        updatedAt: newMatch.updatedAt.toISOString(),
+      },
     });
   } catch (error) {
     console.error("Error creating match:", error);

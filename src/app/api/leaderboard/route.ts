@@ -1,25 +1,51 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
 import { LeaderboardEntry } from "@/lib/types";
 
 export async function GET() {
   try {
-    const users = db.getUsers().filter((u) => u.role !== "ADMIN");
-    const matches = db.getMatches();
+    const [users, matches, currentUser] = await Promise.all([
+      prisma.user.findMany({
+        where: { role: { not: "ADMIN" } },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          winBalance: true,
+          avatar: true,
+        },
+      }),
+      prisma.match.findMany({
+        where: { status: "COMPLETED" },
+        select: {
+          creatorId: true,
+          opponentId: true,
+          winnerId: true,
+          prize: true,
+        },
+      }),
+      getSessionUser(),
+    ]);
 
     const leaderboard: LeaderboardEntry[] = users.map((user) => {
       const userMatches = matches.filter(
-        (m) => (m.creatorId === user.id || m.opponentId === user.id) && m.status === "COMPLETED"
+        (m) => m.creatorId === user.id || m.opponentId === user.id
       );
       const wonMatches = userMatches.filter((m) => m.winnerId === user.id);
-      const winRate = userMatches.length > 0 ? Math.round((wonMatches.length / userMatches.length) * 100) : 75;
+      const winRate =
+        userMatches.length > 0
+          ? Math.round((wonMatches.length / userMatches.length) * 100)
+          : 75;
 
-      const totalWonAmount = wonMatches.reduce((sum, m) => sum + m.prize, 0) || user.winBalance;
+      const totalWonAmount =
+        wonMatches.reduce((sum, m) => sum + m.prize, 0) || user.winBalance;
 
       // Obfuscate phone: e.g. 0171***111
       const p = user.phone;
-      const phonePartial = p.length >= 11 ? `${p.slice(0, 4)}****${p.slice(-3)}` : p;
+      const phonePartial =
+        p.length >= 11 ? `${p.slice(0, 4)}****${p.slice(-3)}` : p;
 
       return {
         rank: 0,
@@ -39,7 +65,6 @@ export async function GET() {
       entry.rank = idx + 1;
     });
 
-    const currentUser = await getSessionUser();
     let myRank: LeaderboardEntry | null = null;
     if (currentUser) {
       myRank = leaderboard.find((e) => e.userId === currentUser.id) || null;

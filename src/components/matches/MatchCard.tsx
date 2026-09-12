@@ -82,8 +82,8 @@ export default function MatchCard({
         <div className="flex items-start gap-3 mb-3 relative z-10">
           <div className="w-12 h-12 rounded-2xl bg-black border border-slate-800 p-0.5 flex-shrink-0 shadow-sm flex items-center justify-center overflow-hidden">
             <Image
-              src="/logo.png"
-              alt="Ludo King"
+              src="/newlogo.png"
+              alt="LudoStar BD"
               width={44}
               height={44}
               className="object-contain w-full h-full rounded-xl"
