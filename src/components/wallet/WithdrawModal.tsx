@@ -28,8 +28,8 @@ export default function WithdrawModal({
 
   const withdrawVal = Number(amount) || 0;
   const isAgent = accountType === "Agent";
-  const agentFee = isAgent ? 20 : 0;
-  const netPayout = Math.max(0, withdrawVal - agentFee);
+  const fee = withdrawVal > 0 ? (isAgent ? Math.round(withdrawVal * 0.02 * 100) / 100 : 10) : 0;
+  const netPayout = Math.max(0, withdrawVal - fee);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,7 +149,7 @@ export default function WithdrawModal({
                       : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
                   }`}
                 >
-                  {t === "Personal" ? "পার্সোনাল (চার্জ ফ্রি)" : "এজেন্ট (২০৳ কর্তন)"}
+                  {t === "Personal" ? "পার্সোনাল (১০৳ চার্জ)" : "এজেন্ট (২% চার্জ)"}
                 </button>
               ))}
             </div>
@@ -214,9 +214,9 @@ export default function WithdrawModal({
               <span className="font-bold text-white font-mono">৳{withdrawVal}</span>
             </div>
             <div className="flex items-center justify-between text-slate-400">
-              <span>{isAgent ? "এজেন্ট ক্যাশআউট চার্জ (কর্তন):" : "ক্যাশআউট চার্জ:"}</span>
-              <span className={`font-bold font-mono ${isAgent ? "text-amber-400" : "text-emerald-400"}`}>
-                {isAgent ? "- ৳২০" : "৳০ (ফ্রি)"}
+              <span>{isAgent ? "এজেন্ট ক্যাশআউট চার্জ (২%):" : "পার্সোনাল সার্ভিস চার্জ:"}</span>
+              <span className="font-bold font-mono text-amber-400">
+                - ৳{fee}
               </span>
             </div>
             <div className="pt-1.5 border-t border-slate-800 flex items-center justify-between font-bold">
@@ -229,13 +229,15 @@ export default function WithdrawModal({
           <div className="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/30 text-[11px] text-amber-200 flex items-start gap-2 leading-relaxed">
             <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-amber-300">উইথড্র নীতিমালা ও শর্তাবলী:</p>
+              <p className="font-bold text-amber-300">উইথড্র নীতিমালা ও চার্জ:</p>
               <p className="text-slate-300 mt-0.5">
                 • সর্বনিম্ন উইথড্র ব্যালেন্স <strong>৳২০০</strong>।
                 <br />
-                • এজেন্ট নম্বরে উইথড্র করলে এজেন্ট ক্যাশআউট ফি বাবদ <strong>২০ টাকা কর্তন</strong> করা হবে।
+                • <strong>পার্সোনাল একাউন্ট:</strong> যেকোনো পরিমাণের জন্য ফিক্সড <strong>১০ টাকা</strong> সার্ভিস চার্জ প্রযোজ্য।
                 <br />
-                • পার্সোনাল একাউন্টে কোনো অতিরিক্ত চার্জ নেই। রিকোয়েস্টের ৩০ মিনিটের মধ্যে টাকা পাঠানো হয়।
+                • <strong>এজেন্ট একাউন্ট:</strong> উত্তোলিত পরিমাণের ওপর <strong>২% ক্যাশআউট চার্জ</strong> প্রযোজ্য।
+                <br />
+                • রিকোয়েস্টের ৫ থেকে ৩০ মিনিটের মধ্যে আপনার নম্বরে টাকা পাঠানো হবে।
               </p>
             </div>
           </div>
@@ -246,7 +248,7 @@ export default function WithdrawModal({
             disabled={loading || winBalance < 200 || withdrawVal < 200}
             className="w-full py-3 rounded-lg bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-400 hover:from-cyan-400 hover:to-blue-400 text-slate-950 font-black text-sm shadow-lg shadow-cyan-500/20 transition-all active:scale-98 disabled:opacity-50"
           >
-            {loading ? "প্রক্রিয়াকরণ হচ্ছে..." : `৳${withdrawVal} উইথড্র নিশ্চিত করুন (${accountType === "Agent" ? "পাবেন ৳" + netPayout : "চার্জ ফ্রি"})`}
+            {loading ? "প্রক্রিয়াকরণ হচ্ছে..." : `৳${withdrawVal} উইথড্র নিশ্চিত করুন (পাবেন ৳${netPayout})`}
           </button>
         </form>
       </div>

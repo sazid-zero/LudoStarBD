@@ -1399,6 +1399,11 @@ function AdminDashboard() {
                           <div className="text-[10px] text-cyan-400 font-mono">
                             {w.mfsProvider} ({w.accountType || "Personal"})
                           </div>
+                          {w.note && (
+                            <div className="text-[10px] text-amber-300/90 truncate max-w-[220px]">
+                              {w.note}
+                            </div>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <span className="font-black text-cyan-300 font-mono">

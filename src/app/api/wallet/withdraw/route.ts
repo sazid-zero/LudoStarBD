@@ -51,10 +51,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // Agent Cashout Fee: 20 Taka cut off when withdraw via agent
+    // Withdrawal Fee Calculation:
+    // Personal: flat 10 TK charge for any amount
+    // Agent: 2% charge upon the amount
     const isAgent = accountType === "Agent";
-    const agentFee = isAgent ? 20 : 0;
-    const netPayable = Math.max(0, withdrawAmount - agentFee);
+    const fee = isAgent
+      ? Math.round(withdrawAmount * 0.02 * 100) / 100
+      : 10;
+    const netPayable = Math.max(0, withdrawAmount - fee);
 
     // Run balance deduction and transaction creation atomically
     const [updatedUser, transaction] = await prisma.$transaction([
@@ -78,22 +82,23 @@ export async function POST(request: Request) {
           accountType,
           accountNumber: accountNumber.trim(),
           note: isAgent
-            ? `${mfsProvider} (Agent - ২০ টাকা কর্তন, গ্রাহক পাবেন: ৳${netPayable})`
-            : `${mfsProvider} (${accountType}) উইথড্র প্রক্রিয়াধীন`,
+            ? `${mfsProvider} (Agent - ২% চার্জ: ৳${fee}, গ্রাহক পাবেন: ৳${netPayable})`
+            : `${mfsProvider} (Personal - ১০৳ চার্জ, গ্রাহক পাবেন: ৳${netPayable})`,
         },
       }),
     ]);
 
     const successMsg = isAgent
-      ? `৳${withdrawAmount} উইথড্র রিকোয়েস্ট সফল! এজেন্ট ক্যাশআউট ফি ২০ টাকা কর্তনের পর আপনি পাবেন ৳${netPayable}। শীঘ্রই টাকা পাঠানো হবে।`
-      : `৳${withdrawAmount} উইথড্র রিকোয়েস্ট সফল! শীঘ্রই আপনার ${mfsProvider} নম্বরে টাকা পাঠানো হবে।`;
+      ? `৳${withdrawAmount} উইথড্র রিকোয়েস্ট সফল! ২% চার্জ (৳${fee}) কর্তনের পর আপনি পাবেন ৳${netPayable}। শীঘ্রই টাকা পাঠানো হবে।`
+      : `৳${withdrawAmount} উইথড্র রিকোয়েস্ট সফল! ১০ টাকা সার্ভিস চার্জ কর্তনের পর আপনি পাবেন ৳${netPayable}। শীঘ্রই আপনার ${mfsProvider} নম্বরে টাকা পাঠানো হবে।`;
 
     return NextResponse.json({
       success: true,
       message: successMsg,
       transaction,
       netPayable,
-      agentFee,
+      fee,
+      agentFee: fee,
       remainingWinBalance: updatedUser.winBalance,
     });
   } catch (error) {
