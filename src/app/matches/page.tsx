@@ -7,7 +7,8 @@ import { useToast } from "@/components/common/ToastContext";
 import MatchCard from "@/components/matches/MatchCard";
 import CreateMatchModal from "@/components/matches/CreateMatchModal";
 import { Match } from "@/lib/types";
-import { Swords, Plus, RefreshCw, Wifi, HelpCircle, Play, X, ExternalLink } from "lucide-react";
+import { Swords, Plus, RefreshCw, Wifi, HelpCircle, Play, X, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
+import { getYoutubeEmbedUrl, getYoutubeWatchUrl } from "@/lib/youtube";
 
 export default function MatchesPage() {
   const { user, refreshUser } = useUser();
@@ -21,6 +22,21 @@ export default function MatchesPage() {
   const [showVideoGuide, setShowVideoGuide] = useState(false);
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  // Video guide state
+  const [matchesVideoUrl, setMatchesVideoUrl] = useState("https://www.youtube.com/watch?v=Y7VWtTgX0Rc");
+  const [showVideoBanner, setShowVideoBanner] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((d) => {
+        if (d?.settings?.video_matches) {
+          setMatchesVideoUrl(d.settings.video_matches);
+        }
+      })
+      .catch((err) => console.error("Error loading matches video:", err));
+  }, []);
 
   const fetchMatches = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -145,6 +161,64 @@ export default function MatchesPage() {
           </div>
         </div>
 
+        {/* Under Ludo Matches Title: How to Play Video Guide Card */}
+        <div className="rounded-2xl bg-gradient-to-b from-[#0d172e] via-[#091024] to-[#060a17] border border-cyan-500/30 overflow-hidden shadow-lg shadow-cyan-950/30">
+          <div className="p-3 sm:p-3.5 flex items-center justify-between border-b border-cyan-500/20 bg-cyan-950/25">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 shadow-sm shadow-cyan-500/20">
+                <Play className="w-4 h-4 fill-cyan-400 ml-0.5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-xs sm:text-sm font-black text-white truncate">
+                    লুডো খেলার নিয়ম ও ভিডিও গাইড
+                  </h3>
+                  <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 uppercase">
+                    কিভাবে খেলবেন
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-400 truncate">
+                  ম্যাচে জয়েন, রুম কোড ব্যবহার এবং খেলার সম্পূর্ণ নিয়মাবলী
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <a
+                href={getYoutubeWatchUrl(matchesVideoUrl)}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all active:scale-95"
+                title="YouTube-এ ওপেন করুন"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span className="hidden xs:inline">YouTube</span>
+              </a>
+              <button
+                onClick={() => setShowVideoBanner(!showVideoBanner)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800/60 transition-all"
+                aria-label="ভিডিও মিনিমাইজ করুন"
+                title={showVideoBanner ? "ভিডিও মিনিমাইজ করুন" : "ভিডিও ওপেন করুন"}
+              >
+                {showVideoBanner ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          {showVideoBanner && (
+            <div className="p-3 bg-black/40">
+              <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-cyan-500/30 shadow-2xl">
+                <iframe
+                  className="w-full h-full"
+                  src={getYoutubeEmbedUrl(matchesVideoUrl)}
+                  title="লুডো খেলার সম্পূর্ণ নিয়ম - LudoStar BD"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Filter Tabs */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           {tabs.map((t) => (
@@ -192,6 +266,7 @@ export default function MatchesPage() {
                 currentUserId={user?.id}
                 onJoin={handleJoin}
                 joining={joiningId === match.id}
+                tutorialVideoUrl={matchesVideoUrl}
               />
             ))}
           </div>
@@ -232,7 +307,7 @@ export default function MatchesPage() {
               <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black border border-cyan-500/40 shadow-lg shadow-cyan-500/10">
                 <iframe
                   className="w-full h-full"
-                  src="https://www.youtube.com/embed/Y7VWtTgX0Rc?rel=0&modestbranding=1"
+                  src={getYoutubeEmbedUrl(matchesVideoUrl)}
                   title="Ludo King এ কীভাবে খেলবেন - সম্পূর্ণ নিয়ম"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
@@ -244,7 +319,7 @@ export default function MatchesPage() {
                   <span>ভিডিও দেখে ১ মিনিটে শিখে নিন</span>
                 </span>
                 <a
-                  href="https://youtu.be/Y7VWtTgX0Rc?si=Lvpi0_dlq7O6IroT"
+                  href={getYoutubeWatchUrl(matchesVideoUrl)}
                   target="_blank"
                   rel="noreferrer"
                   className="text-slate-400 hover:text-white hover:underline flex items-center gap-1 font-semibold"

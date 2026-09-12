@@ -13,6 +13,7 @@ import WithdrawModal from "@/components/wallet/WithdrawModal";
 import CreateMatchModal from "@/components/matches/CreateMatchModal";
 import NoticeModal from "@/components/common/NoticeModal";
 import { Match } from "@/lib/types";
+import { getYoutubeEmbedUrl, getYoutubeWatchUrl } from "@/lib/youtube";
 import {
   Wallet,
   ArrowDownCircle,
@@ -24,6 +25,10 @@ import {
   ChevronRight,
   Sparkles,
   Shield,
+  Play,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -35,6 +40,10 @@ export default function DashboardPage() {
   const [notice, setNotice] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [joiningId, setJoiningId] = useState<string | null>(null);
+
+  // Video guide state
+  const [dashboardVideoUrl, setDashboardVideoUrl] = useState("https://www.youtube.com/watch?v=Y7VWtTgX0Rc");
+  const [showVideoPlayer, setShowVideoPlayer] = useState(true);
 
   // Modals
   const [depositOpen, setDepositOpen] = useState(false);
@@ -91,6 +100,16 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchMatches();
+    // Fetch video settings
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((d) => {
+        if (d?.settings?.video_dashboard) {
+          setDashboardVideoUrl(d.settings.video_dashboard);
+        }
+      })
+      .catch((err) => console.error("Error fetching dashboard video:", err));
+
     // Real-time polling every 4 seconds
     const interval = setInterval(() => fetchMatches(true), 4000);
     return () => clearInterval(interval);
@@ -171,6 +190,64 @@ export default function DashboardPage() {
             <ChevronRight className="w-4 h-4 text-rose-400 flex-shrink-0" />
           </Link>
         )}
+
+        {/* Deposit & Withdraw Video Guide Card */}
+        <div className="rounded-2xl bg-gradient-to-b from-[#0d172e] via-[#091024] to-[#060a17] border border-cyan-500/30 overflow-hidden shadow-lg shadow-cyan-950/30">
+          <div className="p-3 sm:p-3.5 flex items-center justify-between border-b border-cyan-500/20 bg-cyan-950/25">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 shadow-sm shadow-cyan-500/20">
+                <Play className="w-4 h-4 fill-cyan-400 ml-0.5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-xs sm:text-sm font-black text-white truncate">
+                    {lang === "en" ? "How to Deposit & Withdraw Money" : "কীভাবে ডিপোজিট ও টাকা তুলবেন"}
+                  </h3>
+                  <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 uppercase">
+                    ভিডিও গাইড
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-400 truncate">
+                  {lang === "en" ? "Watch this quick tutorial to learn deposit & cashout rules" : "সহজেই টাকা যোগ ও উইথড্র করার সম্পূর্ণ নিয়ম ভিডিওতে দেখুন"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <a
+                href={getYoutubeWatchUrl(dashboardVideoUrl)}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all active:scale-95"
+                title="YouTube-এ ওপেন করুন"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span className="hidden xs:inline">YouTube</span>
+              </a>
+              <button
+                onClick={() => setShowVideoPlayer(!showVideoPlayer)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800/60 transition-all"
+                aria-label="ভিডিও মিনিমাইজ করুন"
+                title={showVideoPlayer ? "ভিডিও মিনিমাইজ করুন" : "ভিডিও ওপেন করুন"}
+              >
+                {showVideoPlayer ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          {showVideoPlayer && (
+            <div className="p-3 bg-black/40">
+              <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-cyan-500/30 shadow-2xl">
+                <iframe
+                  className="w-full h-full"
+                  src={getYoutubeEmbedUrl(dashboardVideoUrl)}
+                  title="How to Deposit & Withdraw on LudoStar BD"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* 4 Action Cards Grid matching screenshot: ডিপোজিট, উইথড্র, লুডো খেলুন, নিয়মাবলী */}
         <div className="grid grid-cols-4 gap-2">

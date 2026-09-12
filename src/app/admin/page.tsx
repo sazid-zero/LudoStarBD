@@ -35,7 +35,10 @@ import {
   TrendingUp,
   Activity,
   Trash2,
+  Play,
+  Video,
 } from "lucide-react";
+import { getYoutubeEmbedUrl, getYoutubeWatchUrl } from "@/lib/youtube";
 
 function AdminDashboard() {
   const router = useRouter();
@@ -44,16 +47,16 @@ function AdminDashboard() {
   const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<
-    "OVERVIEW" | "DEPOSITS" | "WITHDRAWALS" | "MATCHES" | "USERS" | "TICKER"
+    "OVERVIEW" | "DEPOSITS" | "WITHDRAWALS" | "MATCHES" | "USERS" | "TICKER" | "VIDEOS"
   >(() => {
-    if (urlTab && ["OVERVIEW", "DEPOSITS", "WITHDRAWALS", "MATCHES", "USERS", "TICKER"].includes(urlTab)) {
+    if (urlTab && ["OVERVIEW", "DEPOSITS", "WITHDRAWALS", "MATCHES", "USERS", "TICKER", "VIDEOS"].includes(urlTab)) {
       return urlTab;
     }
     return "OVERVIEW";
   });
 
   useEffect(() => {
-    if (urlTab && ["OVERVIEW", "DEPOSITS", "WITHDRAWALS", "MATCHES", "USERS", "TICKER"].includes(urlTab)) {
+    if (urlTab && ["OVERVIEW", "DEPOSITS", "WITHDRAWALS", "MATCHES", "USERS", "TICKER", "VIDEOS"].includes(urlTab)) {
       setActiveTab(urlTab);
     }
   }, [urlTab]);
@@ -153,6 +156,15 @@ function AdminDashboard() {
   }, [tickerText]);
 
   const [submittingRoomCodeId, setSubmittingRoomCodeId] = useState<string | null>(null);
+
+  // Tab 7: Video Settings state
+  const [videoHome, setVideoHome] = useState("https://www.youtube.com/watch?v=Y7VWtTgX0Rc");
+  const [videoDashboard, setVideoDashboard] = useState("https://www.youtube.com/watch?v=Y7VWtTgX0Rc");
+  const [videoMatches, setVideoMatches] = useState("https://www.youtube.com/watch?v=Y7VWtTgX0Rc");
+  const [loadingVideos, setLoadingVideos] = useState(false);
+  const [savingVideos, setSavingVideos] = useState(false);
+  const [previewVideoKey, setPreviewVideoKey] = useState<"home" | "dashboard" | "matches" | null>("home");
+  const videosLoadedRef = useRef(false);
 
   // Filter Refs to avoid stale closures during background polling
   const matchFilterRef = useRef(matchFilter);
@@ -340,6 +352,7 @@ function AdminDashboard() {
     if (activeTab === "MATCHES") fetchMatches(matchFilterRef.current, false);
     if (activeTab === "USERS") fetchUsers(false);
     if (activeTab === "TICKER") fetchAdminNotifications(false);
+    if (activeTab === "VIDEOS") fetchVideoSettings();
   }, [activeTab]);
 
   // Live background polling (silent, never flickers or unmounts DOM)
@@ -699,6 +712,54 @@ function AdminDashboard() {
     }
   };
 
+  // Fetch Video Settings
+  const fetchVideoSettings = async () => {
+    setLoadingVideos(true);
+    try {
+      const res = await fetch("/api/settings");
+      const d = await res.json();
+      if (d?.settings) {
+        if (d.settings.video_homepage) setVideoHome(d.settings.video_homepage);
+        if (d.settings.video_dashboard) setVideoDashboard(d.settings.video_dashboard);
+        if (d.settings.video_matches) setVideoMatches(d.settings.video_matches);
+        videosLoadedRef.current = true;
+      }
+    } catch (err) {
+      console.error("Fetch video settings error:", err);
+    } finally {
+      setLoadingVideos(false);
+    }
+  };
+
+  // Save Video Settings
+  const handleSaveVideos = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingVideos(true);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          settings: {
+            video_homepage: videoHome.trim(),
+            video_dashboard: videoDashboard.trim(),
+            video_matches: videoMatches.trim(),
+          },
+        }),
+      });
+      const d = await res.json();
+      if (res.ok) {
+        showToast(d.message || "ভিডিও লিংক সফলভাবে সংরক্ষিত হয়েছে!", "success");
+      } else {
+        showToast(d.error || "সংরক্ষণ করতে সমস্যা হয়েছে", "error");
+      }
+    } catch (err: any) {
+      showToast(err.message || "সার্ভার এরর", "error");
+    } finally {
+      setSavingVideos(false);
+    }
+  };
+
   const tabs = [
     { id: "OVERVIEW", label: "ওভারভিউ", icon: Shield, badge: null, badgeColor: "" },
     {
@@ -732,6 +793,7 @@ function AdminDashboard() {
     },
     { id: "USERS", label: "ইউজার", icon: Users, badge: null, badgeColor: "" },
     { id: "TICKER", label: "ঘোষণা ও নোটিশ", icon: Bell, badge: null, badgeColor: "" },
+    { id: "VIDEOS", label: "ভিডিও গাইড", icon: Play, badge: null, badgeColor: "" },
   ];
 
   return (
@@ -2767,6 +2829,339 @@ function AdminDashboard() {
                   })}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ======================= TAB 7: VIDEOS ======================= */}
+        {activeTab === "VIDEOS" && (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Header Banner */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#0d1527] via-[#0e1b38] to-[#070b14] border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500/20 to-red-600/20 border border-red-500/40 flex items-center justify-center text-rose-400 shadow-md shadow-red-500/10 flex-shrink-0">
+                  <Play className="w-5 h-5 fill-rose-500 text-rose-500 ml-0.5" />
+                </div>
+                <div>
+                  <h2 className="text-sm sm:text-base font-black text-white flex items-center gap-2">
+                    <span>ভিডিও টিউটোরিয়াল ম্যানেজমেন্ট</span>
+                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 uppercase">
+                      YOUTUBE
+                    </span>
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    হোমপেজ, ড্যাশবোর্ড এবং লুডো ম্যাচ পেইজের ইউটিউব ভিডিও লিংক এখান থেকে পরিবর্তন করুন।
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={fetchVideoSettings}
+                  disabled={loadingVideos}
+                  className="px-3 py-1.5 rounded-xl bg-[#0a0f1d] border border-[#1a2333] hover:border-cyan-500/30 text-slate-300 hover:text-white text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50"
+                  title="সেটিংস রিফ্রেশ করুন"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loadingVideos ? "animate-spin text-cyan-400" : ""}`} />
+                  <span>রিফ্রেশ</span>
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveVideos} className="space-y-5">
+              {/* Card 1: Homepage Video */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#0d1527] border border-[#1a2333] hover:border-cyan-500/30 transition-all space-y-3.5 shadow-xl">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono">
+                        HOMEPAGE
+                      </span>
+                      <h3 className="text-xs sm:text-sm font-bold text-white">
+                        ১. হোমপেজ ভিডিও গাইড
+                      </h3>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      হোমপেজের &ldquo;কীভাবে খেলবেন এবং জিতে নেবেন ক্যাশ টাকা&rdquo; সেকশনে এই ভিডিওটি প্রদর্শিত হয়।
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewVideoKey(previewVideoKey === "home" ? null : "home")}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all flex items-center gap-1 ${
+                        previewVideoKey === "home"
+                          ? "bg-cyan-500/20 border-cyan-500/50 text-cyan-300"
+                          : "bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200"
+                      }`}
+                    >
+                      <Eye className="w-3 h-3" />
+                      <span>{previewVideoKey === "home" ? "প্রিভিউ বন্ধ" : "প্রিভিউ দেখুন"}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setVideoHome("https://www.youtube.com/watch?v=Y7VWtTgX0Rc")}
+                      className="px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-400 hover:text-slate-200"
+                      title="ডিফল্ট অফিশিয়াল লিংক সেট করুন"
+                    >
+                      ডিফল্ট
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300">
+                    YouTube ভিডিও URL বা শর্ট লিংক:
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={videoHome}
+                      onChange={(e) => setVideoHome(e.target.value)}
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0f1d] border border-[#1a2333] focus:border-cyan-500 text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all pr-16"
+                    />
+                    <a
+                      href={getYoutubeWatchUrl(videoHome)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 text-[10px] font-bold flex items-center gap-1"
+                      title="ইউটিউবে খুলুন"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span>টেস্ট</span>
+                    </a>
+                  </div>
+                </div>
+
+                {previewVideoKey === "home" && (
+                  <div className="mt-3 p-3 rounded-xl bg-black/60 border border-cyan-500/30 space-y-2">
+                    <span className="text-[11px] font-bold text-cyan-400 flex items-center gap-1.5">
+                      <Play className="w-3 h-3 fill-cyan-400" />
+                      <span>লাইভ প্রিভিউ (হোমপেজ ভিডিও)</span>
+                    </span>
+                    <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black border border-slate-800">
+                      <iframe
+                        className="w-full h-full"
+                        src={getYoutubeEmbedUrl(videoHome)}
+                        title="Homepage Video Preview"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Card 2: Dashboard Video */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#0d1527] border border-[#1a2333] hover:border-cyan-500/30 transition-all space-y-3.5 shadow-xl">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">
+                        DASHBOARD
+                      </span>
+                      <h3 className="text-xs sm:text-sm font-bold text-white">
+                        ২. ড্যাশবোর্ড উইথড্র ও ডিপোজিট ভিডিও
+                      </h3>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      ড্যাশবোর্ডে ডিপোজিট ও উইথড্র বাটন সারির ঠিক উপরে এই ভিডিও গাইডটি প্রদর্শিত হয়।
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewVideoKey(previewVideoKey === "dashboard" ? null : "dashboard")}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all flex items-center gap-1 ${
+                        previewVideoKey === "dashboard"
+                          ? "bg-cyan-500/20 border-cyan-500/50 text-cyan-300"
+                          : "bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200"
+                      }`}
+                    >
+                      <Eye className="w-3 h-3" />
+                      <span>{previewVideoKey === "dashboard" ? "প্রিভিউ বন্ধ" : "প্রিভিউ দেখুন"}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setVideoDashboard("https://www.youtube.com/watch?v=Y7VWtTgX0Rc")}
+                      className="px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-400 hover:text-slate-200"
+                      title="ডিফল্ট অফিশিয়াল লিংক সেট করুন"
+                    >
+                      ডিফল্ট
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300">
+                    YouTube ভিডিও URL বা শর্ট লিংক:
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={videoDashboard}
+                      onChange={(e) => setVideoDashboard(e.target.value)}
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0f1d] border border-[#1a2333] focus:border-cyan-500 text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all pr-16"
+                    />
+                    <a
+                      href={getYoutubeWatchUrl(videoDashboard)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 text-[10px] font-bold flex items-center gap-1"
+                      title="ইউটিউবে খুলুন"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span>টেস্ট</span>
+                    </a>
+                  </div>
+                </div>
+
+                {previewVideoKey === "dashboard" && (
+                  <div className="mt-3 p-3 rounded-xl bg-black/60 border border-cyan-500/30 space-y-2">
+                    <span className="text-[11px] font-bold text-cyan-400 flex items-center gap-1.5">
+                      <Play className="w-3 h-3 fill-cyan-400" />
+                      <span>লাইভ প্রিভিউ (ড্যাশবোর্ড উইথড্র ভিডিও)</span>
+                    </span>
+                    <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black border border-slate-800">
+                      <iframe
+                        className="w-full h-full"
+                        src={getYoutubeEmbedUrl(videoDashboard)}
+                        title="Dashboard Video Preview"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Card 3: Ludo Matches Video */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#0d1527] border border-[#1a2333] hover:border-cyan-500/30 transition-all space-y-3.5 shadow-xl">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">
+                        LUDO MATCHES
+                      </span>
+                      <h3 className="text-xs sm:text-sm font-bold text-white">
+                        ৩. লুডো ম্যাচেস খেলার নিয়ম ভিডিও
+                      </h3>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      লুডো ম্যাচেস পেইজের টাইটেলের নিচে এবং &ldquo;কিভাবে খেলবেন?&rdquo; গাইড মডালে এই ভিডিওটি থাকে।
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewVideoKey(previewVideoKey === "matches" ? null : "matches")}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all flex items-center gap-1 ${
+                        previewVideoKey === "matches"
+                          ? "bg-cyan-500/20 border-cyan-500/50 text-cyan-300"
+                          : "bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200"
+                      }`}
+                    >
+                      <Eye className="w-3 h-3" />
+                      <span>{previewVideoKey === "matches" ? "প্রিভিউ বন্ধ" : "প্রিভিউ দেখুন"}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setVideoMatches("https://www.youtube.com/watch?v=Y7VWtTgX0Rc")}
+                      className="px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-400 hover:text-slate-200"
+                      title="ডিফল্ট অফিশিয়াল লিংক সেট করুন"
+                    >
+                      ডিফল্ট
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300">
+                    YouTube ভিডিও URL বা শর্ট লিংক:
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={videoMatches}
+                      onChange={(e) => setVideoMatches(e.target.value)}
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0f1d] border border-[#1a2333] focus:border-cyan-500 text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all pr-16"
+                    />
+                    <a
+                      href={getYoutubeWatchUrl(videoMatches)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 text-[10px] font-bold flex items-center gap-1"
+                      title="ইউটিউবে খুলুন"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span>টেস্ট</span>
+                    </a>
+                  </div>
+                </div>
+
+                {previewVideoKey === "matches" && (
+                  <div className="mt-3 p-3 rounded-xl bg-black/60 border border-cyan-500/30 space-y-2">
+                    <span className="text-[11px] font-bold text-cyan-400 flex items-center gap-1.5">
+                      <Play className="w-3 h-3 fill-cyan-400" />
+                      <span>লাইভ প্রিভিউ (লুডো ম্যাচেস ভিডিও)</span>
+                    </span>
+                    <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black border border-slate-800">
+                      <iframe
+                        className="w-full h-full"
+                        src={getYoutubeEmbedUrl(videoMatches)}
+                        title="Matches Video Preview"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Save Button */}
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={savingVideos}
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-black text-sm shadow-xl shadow-cyan-500/20 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {savingVideos ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>সংরক্ষণ করা হচ্ছে...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4 text-slate-950 stroke-[3]" />
+                      <span>সকল ভিডিও লিংক সংরক্ষণ করুন</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+
+            {/* Help / Guide Box */}
+            <div className="p-4 rounded-2xl bg-[#0a0f1d] border border-cyan-500/20 space-y-2 text-xs text-slate-400">
+              <h4 className="font-bold text-white flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                <span>সমর্থিত ইউটিউব লিংক ফরম্যাটসমূহ</span>
+              </h4>
+              <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-400 font-mono">
+                <li>https://www.youtube.com/watch?v=Y7VWtTgX0Rc</li>
+                <li>https://youtu.be/Y7VWtTgX0Rc</li>
+                <li>https://www.youtube.com/embed/Y7VWtTgX0Rc</li>
+                <li>https://youtube.com/shorts/Y7VWtTgX0Rc</li>
+              </ul>
+              <p className="text-[11px] text-slate-500 pt-1 font-sans">
+                * সিস্টেম স্বয়ংক্রিয়ভাবে ভিডিও আইডি শনাক্ত করে এবং রেসপন্সিভ প্লেয়ার ফ্রেম তৈরি করে।
+              </p>
             </div>
           </div>
         )}

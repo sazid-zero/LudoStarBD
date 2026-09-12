@@ -167,3 +167,10 @@ model ReceivedSms {
   @@index([trxId])
   @@index([isClaimed])
 }
+
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}

@@ -25,11 +25,47 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/components/common/LanguageContext";
 import LanguageToggle from "@/components/common/LanguageToggle";
+import { getYoutubeEmbedUrl, getYoutubeWatchUrl } from "@/lib/youtube";
+
+function GooglePlayIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M3.609 1.813a1.5 1.5 0 0 0-.359 1.031v18.312a1.5 1.5 0 0 0 .359 1.031l9.969-10.187L3.609 1.813z"
+        fill="#2196F3"
+      />
+      <path
+        d="M17.438 9.938l-3.859 2.062-3.61-3.687 7.469 1.625z"
+        fill="#FFC107"
+      />
+      <path
+        d="M3.609 1.813l9.969 10.187 3.86-2.063L6.594.469a2.03 2.03 0 0 0-2.985 1.344z"
+        fill="#4CAF50"
+      />
+      <path
+        d="M13.578 12l-9.969 10.188c.844.75 2.156.718 2.984.187l10.844-5.813-3.859-4.562z"
+        fill="#F44336"
+      />
+    </svg>
+  );
+}
 
 export default function LandingPage() {
   const { lang, t } = useLanguage();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [bannerIdx, setBannerIdx] = useState(0);
+  const [homeVideoUrl, setHomeVideoUrl] = useState("https://www.youtube.com/watch?v=Y7VWtTgX0Rc");
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((d) => {
+        if (d?.settings?.video_homepage) {
+          setHomeVideoUrl(d.settings.video_homepage);
+        }
+      })
+      .catch((err) => console.error("Error loading home video:", err));
+  }, []);
 
   const toggleFaq = (idx: number) => {
     setOpenFaq(openFaq === idx ? null : idx);
@@ -214,24 +250,54 @@ export default function LandingPage() {
             {t("hero.desc")}
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto">
-            <Link
-              href="/dashboard"
-              className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-[#0070F3] hover:bg-blue-600 text-white font-black text-sm shadow-xl shadow-blue-500/25 active:scale-95 transition-all"
-            >
-              <Smartphone className="w-5 h-5" />
-              <span>{t("btn.playWeb")}</span>
-            </Link>
+          <div className="flex flex-col items-center justify-center gap-3.5 max-w-2xl mx-auto">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 w-full">
+              <Link
+                href="/dashboard"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-[#0070F3] hover:bg-blue-600 text-white font-black text-sm shadow-xl shadow-blue-500/25 active:scale-95 transition-all"
+              >
+                <Smartphone className="w-5 h-5 text-cyan-200" />
+                <span>{t("btn.playWeb")}</span>
+              </Link>
 
-            {/* APK Download commented out
-            <a
-              href="#download"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-black text-sm shadow-sm active:scale-95 transition-all"
-            >
-              <Download className="w-5 h-5 text-[#00D06C]" />
-              <span>{t("btn.downloadApk")}</span>
-            </a>
-            */}
+              {/* Ludo King Google Play Download Button */}
+              <a
+                href="https://play.google.com/store/apps/details?id=com.ludo.king"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-2xl bg-slate-900/95 hover:bg-slate-800 text-white border border-emerald-500/40 hover:border-emerald-400 shadow-lg shadow-emerald-500/10 active:scale-95 transition-all group"
+                title="Download Ludo King on Google Play"
+              >
+                <GooglePlayIcon className="w-6 h-6 flex-shrink-0" />
+                <div className="text-left">
+                  <span className="block text-[9px] uppercase tracking-wider text-slate-400 font-semibold leading-none">
+                    GET IT ON
+                  </span>
+                  <span className="block text-xs font-black text-white group-hover:text-emerald-300 leading-tight">
+                    Ludo King
+                  </span>
+                </div>
+              </a>
+
+              {/* Ludo World Google Play Download Button */}
+              <a
+                href="https://play.google.com/store/apps/details?id=com.tencent.ludosuperstar&pcampaignid=web_share"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-2xl bg-slate-900/95 hover:bg-slate-800 text-white border border-cyan-500/40 hover:border-cyan-400 shadow-lg shadow-cyan-500/10 active:scale-95 transition-all group"
+                title="Download Ludo World on Google Play"
+              >
+                <GooglePlayIcon className="w-6 h-6 flex-shrink-0" />
+                <div className="text-left">
+                  <span className="block text-[9px] uppercase tracking-wider text-slate-400 font-semibold leading-none">
+                    GET IT ON
+                  </span>
+                  <span className="block text-xs font-black text-white group-hover:text-cyan-300 leading-tight">
+                    Ludo World
+                  </span>
+                </div>
+              </a>
+            </div>
           </div>
 
           {/* Social proof stats */}
@@ -445,7 +511,7 @@ export default function LandingPage() {
               <div className="relative rounded-3xl overflow-hidden bg-black border-2 border-cyan-500/40 shadow-2xl shadow-cyan-500/20 aspect-video">
                 <iframe
                   className="w-full h-full"
-                  src="https://www.youtube.com/embed/Y7VWtTgX0Rc?rel=0&modestbranding=1"
+                  src={getYoutubeEmbedUrl(homeVideoUrl)}
                   title="How to play LudoStar BD - Official Tutorial"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
@@ -457,7 +523,7 @@ export default function LandingPage() {
                   <span>অফিশিয়াল ভিডিও টিউটোরিয়াল</span>
                 </span>
                 <a
-                  href="https://youtu.be/Y7VWtTgX0Rc?si=Lvpi0_dlq7O6IroT"
+                  href={getYoutubeWatchUrl(homeVideoUrl)}
                   target="_blank"
                   rel="noreferrer"
                   className="text-slate-400 hover:text-white flex items-center gap-1 font-semibold hover:underline"
@@ -486,11 +552,32 @@ export default function LandingPage() {
                 <span className="w-7 h-7 rounded-xl bg-amber-500/20 text-amber-400 font-black flex items-center justify-center text-xs flex-shrink-0">
                   ২
                 </span>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Ludo King-এ রুম কোড দিয়ে খেলুন</h4>
+                <div className="w-full">
+                  <h4 className="text-sm font-bold text-white">Ludo King / World-এ কোড দিয়ে খেলুন</h4>
                   <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
-                    ওয়েবসাইটে দেওয়া রুম কোডটি কপি করে Ludo King অ্যাপের 'Play with Friends'-এ গিয়ে জয়েন করুন।
+                    ওয়েবসাইটে দেওয়া রুম কোডটি কপি করে অ্যাপে জয়েন করে খেলুন।
                   </p>
+                  {/* Direct download links */}
+                  <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-800">
+                    <a
+                      href="https://play.google.com/store/apps/details?id=com.ludo.king"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-[11px] font-bold text-emerald-300 transition-all"
+                    >
+                      <GooglePlayIcon className="w-3.5 h-3.5" />
+                      <span>Ludo King</span>
+                    </a>
+                    <a
+                      href="https://play.google.com/store/apps/details?id=com.tencent.ludosuperstar&pcampaignid=web_share"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-[11px] font-bold text-cyan-300 transition-all"
+                    >
+                      <GooglePlayIcon className="w-3.5 h-3.5" />
+                      <span>Ludo World</span>
+                    </a>
+                  </div>
                 </div>
               </div>
 

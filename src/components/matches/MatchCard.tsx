@@ -20,12 +20,14 @@ import {
   Play,
   ExternalLink,
 } from "lucide-react";
+import { getYoutubeEmbedUrl, getYoutubeWatchUrl } from "@/lib/youtube";
 
 interface MatchCardProps {
   match: Match;
   currentUserId?: string | null;
   onJoin?: (matchId: string) => void;
   joining?: boolean;
+  tutorialVideoUrl?: string;
 }
 
 export default function MatchCard({
@@ -33,6 +35,7 @@ export default function MatchCard({
   currentUserId,
   onJoin,
   joining,
+  tutorialVideoUrl,
 }: MatchCardProps) {
   const { lang } = useLanguage();
   const { user, refreshUser } = useUser();
@@ -306,7 +309,7 @@ export default function MatchCard({
               <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black border border-cyan-500/40 shadow-lg shadow-cyan-500/10">
                 <iframe
                   className="w-full h-full"
-                  src="https://www.youtube.com/embed/Y7VWtTgX0Rc?rel=0&modestbranding=1"
+                  src={getYoutubeEmbedUrl(tutorialVideoUrl)}
                   title="Ludo King এ কীভাবে খেলবেন - সম্পূর্ণ নিয়ম"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
@@ -318,7 +321,7 @@ export default function MatchCard({
                   <span>ভিডিও দেখে ১ মিনিটে শিখে নিন</span>
                 </span>
                 <a
-                  href="https://youtu.be/Y7VWtTgX0Rc?si=Lvpi0_dlq7O6IroT"
+                  href={getYoutubeWatchUrl(tutorialVideoUrl)}
                   target="_blank"
                   rel="noreferrer"
                   className="text-slate-400 hover:text-white hover:underline flex items-center gap-1 font-semibold"
