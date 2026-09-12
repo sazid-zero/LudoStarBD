@@ -2799,7 +2799,7 @@ function AdminDashboard() {
                               {notif.type || "ANNOUNCEMENT"}
                             </span>
                             <span className="text-[10px] text-slate-500 font-mono">
-                              প্রাপক: {notif.userId === "ALL" ? "সকল ইউজার (ALL)" : notif.userId}
+                              প্রাপক: {notif.userId === "ALL" ? "সকল ইউজার (ALL)" : notif.userId === "ADMIN" ? "এডমিন (ADMIN)" : notif.userId}
                             </span>
                             <span className="text-[10px] text-slate-500 font-mono">
                               • {new Date(notif.createdAt).toLocaleString("bn-BD", {

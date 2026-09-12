@@ -108,7 +108,7 @@ export async function POST(request: Request) {
     // Notify admins
     await prisma.notification.create({
       data: {
-        userId: "ALL",
+        userId: "ADMIN",
         title: `💰 নতুন ডিপোজিট রিকোয়েস্ট — ৳${depositAmount}`,
         message: `${user.firstName} (${user.phone}) ৳${depositAmount} ${mfsProvider} ডিপোজিট দিয়েছেন। TrxID: ${trxId.trim()}। অনুগ্রহ করে যাচাই করুন।`,
         type: "DEPOSIT",

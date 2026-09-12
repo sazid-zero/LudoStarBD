@@ -88,6 +88,21 @@ export async function POST(request: Request) {
       }),
     ]);
 
+    // Notify admins
+    try {
+      await prisma.notification.create({
+        data: {
+          userId: "ADMIN",
+          title: `💸 নতুন উইথড্র রিকোয়েস্ট — ৳${withdrawAmount}`,
+          message: `${user.firstName} (${user.phone}) ৳${withdrawAmount} ${mfsProvider} (${accountType}) উইথড্র চেয়েছেন। নম্বর: ${accountNumber.trim()}।`,
+          type: "ALERT",
+          link: "/admin",
+        },
+      });
+    } catch (notifErr) {
+      console.error("Failed to create admin withdraw notification:", notifErr);
+    }
+
     const successMsg = isAgent
       ? `৳${withdrawAmount} উইথড্র রিকোয়েস্ট সফল! ২% চার্জ (৳${fee}) কর্তনের পর আপনি পাবেন ৳${netPayable}। শীঘ্রই টাকা পাঠানো হবে।`
       : `৳${withdrawAmount} উইথড্র রিকোয়েস্ট সফল! ১০ টাকা সার্ভিস চার্জ কর্তনের পর আপনি পাবেন ৳${netPayable}। শীঘ্রই আপনার ${mfsProvider} নম্বরে টাকা পাঠানো হবে।`;

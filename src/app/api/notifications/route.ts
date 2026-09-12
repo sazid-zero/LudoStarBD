@@ -6,9 +6,17 @@ export async function GET() {
   try {
     const user = await getSessionUser();
     if (!user) {
-      // Unauthenticated: return global announcements only
+      // Unauthenticated: return global public announcements only
       const globalNotifs = await prisma.notification.findMany({
-        where: { userId: "ALL" },
+        where: {
+          userId: "ALL",
+          NOT: {
+            OR: [
+              { link: { startsWith: "/admin" } },
+              { userId: "ADMIN" },
+            ],
+          },
+        },
         orderBy: { createdAt: "desc" },
         take: 50,
       });
@@ -22,23 +30,52 @@ export async function GET() {
       });
     }
 
+    const isAdmin = user.role === "ADMIN";
+
+    // Admins see:
+    // 1. Their own personal notifications ({ userId: user.id })
+    // 2. Global announcements ({ userId: "ALL" })
+    // 3. Admin-only notifications ({ userId: "ADMIN" })
+    //
+    // Regular players see:
+    // 1. Their own personal notifications ({ userId: user.id })
+    // 2. Global announcements ({ userId: "ALL" } - strictly excluding any admin alerts or /admin links)
+    const whereClause: any = isAdmin
+      ? {
+          OR: [{ userId: user.id }, { userId: "ALL" }, { userId: "ADMIN" }],
+        }
+      : {
+          OR: [
+            { userId: user.id },
+            {
+              userId: "ALL",
+              NOT: {
+                link: { startsWith: "/admin" },
+              },
+            },
+          ],
+        };
+
     const notifs = await prisma.notification.findMany({
-      where: {
-        OR: [{ userId: user.id }, { userId: "ALL" }],
-      },
+      where: whereClause,
       orderBy: { createdAt: "desc" },
       take: 100,
     });
 
-    const mappedNotifs = notifs.map((n) => {
-      const isRead =
-        n.userId === "ALL" ? (n.readByUsers || []).includes(user.id) : n.isRead;
-      return {
-        ...n,
-        isRead,
-        createdAt: n.createdAt.toISOString(),
-      };
-    });
+    const mappedNotifs = notifs
+      // Safety filter: ensure non-admins NEVER receive admin notifications or /admin links
+      .filter((n) => isAdmin || (n.userId !== "ADMIN" && !n.link?.startsWith("/admin")))
+      .map((n) => {
+        const isGroupNotif = n.userId === "ALL" || n.userId === "ADMIN";
+        const isRead = isGroupNotif
+          ? (n.readByUsers || []).includes(user.id)
+          : n.isRead;
+        return {
+          ...n,
+          isRead,
+          createdAt: n.createdAt.toISOString(),
+        };
+      });
 
     const unreadCount = mappedNotifs.filter((n) => !n.isRead).length;
 
@@ -70,7 +107,7 @@ export async function POST(request: Request) {
           where: { id: targetId },
         });
         if (notif) {
-          if (notif.userId === "ALL") {
+          if (notif.userId === "ALL" || notif.userId === "ADMIN") {
             const current = notif.readByUsers || [];
             if (!current.includes(user.id)) {
               await prisma.notification.update({
@@ -92,10 +129,15 @@ export async function POST(request: Request) {
           data: { isRead: true },
         });
 
-        const allNotifs = await prisma.notification.findMany({
-          where: { userId: "ALL" },
+        const groupNotifs = await prisma.notification.findMany({
+          where: {
+            OR: [
+              { userId: "ALL" },
+              ...(user.role === "ADMIN" ? [{ userId: "ADMIN" }] : []),
+            ],
+          },
         });
-        for (const n of allNotifs) {
+        for (const n of groupNotifs) {
           const current = n.readByUsers || [];
           if (!current.includes(user.id)) {
             await prisma.notification.update({

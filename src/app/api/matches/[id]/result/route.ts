@@ -139,10 +139,10 @@ export async function POST(
         });
       }
 
-      // Alert ALL Admins
+      // Alert Admins
       await prisma.notification.create({
         data: {
-          userId: "ALL",
+          userId: "ADMIN",
           title: `🚨 ম্যাচ #${match.matchNo} বিরোধ! উভয় খেলোয়াড় জয়ের দাবি করেছেন`,
           message: `${match.creatorName || "খেলোয়াড় ১"} ও ${match.opponentName || "খেলোয়াড় ২"} উভয়ই জয়ের দাবি করেছেন। এডমিন প্যানেল থেকে স্ক্রিনশট যাচাই করুন।`,
           type: "ALERT",
