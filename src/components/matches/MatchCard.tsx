@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Match } from "@/lib/types";
@@ -43,6 +42,23 @@ export default function MatchCard({
   const [showRoomIdModal, setShowRoomIdModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [effectiveVideoUrl, setEffectiveVideoUrl] = useState(tutorialVideoUrl || "");
+
+  useEffect(() => {
+    if (tutorialVideoUrl) {
+      setEffectiveVideoUrl(tutorialVideoUrl);
+      return;
+    }
+    // Fetch video_matches from /api/settings if not supplied
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((d) => {
+        if (d?.settings?.video_matches) {
+          setEffectiveVideoUrl(d.settings.video_matches);
+        }
+      })
+      .catch(() => {});
+  }, [tutorialVideoUrl]);
 
   const isCreator = Boolean(currentUserId && match.creatorId === currentUserId);
   const isOpponent = Boolean(currentUserId && match.opponentId === currentUserId);
@@ -309,7 +325,7 @@ export default function MatchCard({
               <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black border border-cyan-500/40 shadow-lg shadow-cyan-500/10">
                 <iframe
                   className="w-full h-full"
-                  src={getYoutubeEmbedUrl(tutorialVideoUrl)}
+                  src={getYoutubeEmbedUrl(effectiveVideoUrl || tutorialVideoUrl)}
                   title="Ludo King এ কীভাবে খেলবেন - সম্পূর্ণ নিয়ম"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
@@ -321,7 +337,7 @@ export default function MatchCard({
                   <span>ভিডিও দেখে ১ মিনিটে শিখে নিন</span>
                 </span>
                 <a
-                  href={getYoutubeWatchUrl(tutorialVideoUrl)}
+                  href={getYoutubeWatchUrl(effectiveVideoUrl || tutorialVideoUrl)}
                   target="_blank"
                   rel="noreferrer"
                   className="text-slate-400 hover:text-white hover:underline flex items-center gap-1 font-semibold"

@@ -43,6 +43,7 @@ export default function DashboardPage() {
 
   // Video guide state
   const [dashboardVideoUrl, setDashboardVideoUrl] = useState("https://www.youtube.com/watch?v=Y7VWtTgX0Rc");
+  const [matchesVideoUrl, setMatchesVideoUrl] = useState("https://www.youtube.com/watch?v=Y7VWtTgX0Rc");
   const [showVideoPlayer, setShowVideoPlayer] = useState(true);
 
   // Modals
@@ -106,6 +107,9 @@ export default function DashboardPage() {
       .then((d) => {
         if (d?.settings?.video_dashboard) {
           setDashboardVideoUrl(d.settings.video_dashboard);
+        }
+        if (d?.settings?.video_matches) {
+          setMatchesVideoUrl(d.settings.video_matches);
         }
       })
       .catch((err) => console.error("Error fetching dashboard video:", err));
@@ -420,6 +424,7 @@ export default function DashboardPage() {
                   currentUserId={user?.id}
                   onJoin={handleJoin}
                   joining={joiningId === match.id}
+                  tutorialVideoUrl={matchesVideoUrl}
                 />
               ))}
             </div>

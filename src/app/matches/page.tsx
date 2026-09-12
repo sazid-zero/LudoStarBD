@@ -7,8 +7,8 @@ import { useToast } from "@/components/common/ToastContext";
 import MatchCard from "@/components/matches/MatchCard";
 import CreateMatchModal from "@/components/matches/CreateMatchModal";
 import { Match } from "@/lib/types";
-import { Swords, Plus, RefreshCw, HelpCircle, Play, X, ExternalLink } from "lucide-react";
 import { getYoutubeEmbedUrl, getYoutubeWatchUrl } from "@/lib/youtube";
+import { Swords, Plus, RefreshCw, Wifi, HelpCircle, Play, X, ExternalLink } from "lucide-react";
 
 export default function MatchesPage() {
   const { user, refreshUser } = useUser();
@@ -20,22 +20,9 @@ export default function MatchesPage() {
   const [activeTab, setActiveTab] = useState<"ALL" | "WAITING" | "RUNNING" | "COMPLETED" | "MY">("ALL");
   const [createOpen, setCreateOpen] = useState(false);
   const [showVideoGuide, setShowVideoGuide] = useState(false);
+  const [matchesVideoUrl, setMatchesVideoUrl] = useState("https://www.youtube.com/watch?v=Y7VWtTgX0Rc");
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-
-  // Video URL for tutorial (used in MatchCard "কিভাবে খেলবেন?" modal and page guide modal)
-  const [matchesVideoUrl, setMatchesVideoUrl] = useState("https://www.youtube.com/watch?v=Y7VWtTgX0Rc");
-
-  useEffect(() => {
-    fetch("/api/settings")
-      .then((res) => res.json())
-      .then((d) => {
-        if (d?.settings?.video_matches) {
-          setMatchesVideoUrl(d.settings.video_matches);
-        }
-      })
-      .catch((err) => console.error("Error loading matches video:", err));
-  }, []);
 
   const fetchMatches = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -60,9 +47,17 @@ export default function MatchesPage() {
     }
   }, [activeTab]);
 
-  // Initial fetch when tab changes
+  // Initial fetch when tab changes and load video settings
   useEffect(() => {
     fetchMatches();
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((d) => {
+        if (d?.settings?.video_matches) {
+          setMatchesVideoUrl(d.settings.video_matches);
+        }
+      })
+      .catch((err) => console.error("Error fetching matches video:", err));
   }, [fetchMatches]);
 
   // Real-time polling every 4 seconds (silent background refresh)
@@ -75,7 +70,7 @@ export default function MatchesPage() {
 
   const handleJoin = async (matchId: string) => {
     if (!user) {
-      showToast("à¦®à§à¦¯à¦¾à¦šà§‡ à¦œà¦¯à¦¼à§‡à¦¨ à¦•à¦°à¦¤à§‡ à¦†à¦—à§‡ à¦²à¦—à¦‡à¦¨ à¦•à¦°à§à¦¨", "error");
+      showToast("ম্যাচে জয়েন করতে আগে লগইন করুন", "error");
       return;
     }
 
@@ -86,31 +81,31 @@ export default function MatchesPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "à¦®à§à¦¯à¦¾à¦šà§‡ à¦œà¦¯à¦¼à§‡à¦¨ à¦•à¦°à¦¤à§‡ à¦¸à¦®à¦¸à§à¦¯à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡");
+        throw new Error(data.error || "ম্যাচে জয়েন করতে সমস্যা হয়েছে");
       }
 
-      showToast(data.message || "à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦®à§à¦¯à¦¾à¦šà§‡ à¦¯à§à¦•à§à¦¤ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¦¨!", "success");
+      showToast(data.message || "সফলভাবে ম্যাচে যুক্ত হয়েছেন!", "success");
       await refreshUser();
       await fetchMatches();
     } catch (err: any) {
-      showToast(err.message || "à¦¸à¦®à¦¸à§à¦¯à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡", "error");
+      showToast(err.message || "সমস্যা হয়েছে", "error");
     } finally {
       setJoiningId(null);
     }
   };
 
   const tabs = [
-    { id: "ALL", label: "à¦¸à¦¬ à¦®à§à¦¯à¦¾à¦š" },
-    { id: "WAITING", label: "à¦…à¦ªà§‡à¦•à§à¦·à¦®à¦¾à¦£" },
-    { id: "RUNNING", label: "à¦šà¦²à¦®à¦¾à¦¨" },
-    { id: "MY", label: "à¦†à¦®à¦¾à¦° à¦®à§à¦¯à¦¾à¦š" },
-    { id: "COMPLETED", label: "à¦¸à¦®à¦¾à¦ªà§à¦¤" },
+    { id: "ALL", label: "সব ম্যাচ" },
+    { id: "WAITING", label: "অপেক্ষমাণ" },
+    { id: "RUNNING", label: "চলমান" },
+    { id: "MY", label: "আমার ম্যাচ" },
+    { id: "COMPLETED", label: "সমাপ্ত" },
   ] as const;
 
   const totalBalance = (user?.mainBalance || 0) + (user?.winBalance || 0);
 
   return (
-    <AppShell title="à¦²à§à¦¡à§‹ à¦®à§à¦¯à¦¾à¦š à¦à¦°à¦¿à¦¨à¦¾">
+    <AppShell title="লুডো ম্যাচ এরিনা">
       <div className="p-3.5 space-y-3.5">
         {/* Header & Create Button */}
         <div className="flex items-center justify-between">
@@ -135,7 +130,7 @@ export default function MatchesPage() {
             <button
               onClick={() => fetchMatches()}
               className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white active:scale-95"
-              title="à¦°à¦¿à¦«à§à¦°à§‡à¦¶"
+              title="রিফ্রেশ"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
             </button>
@@ -143,11 +138,11 @@ export default function MatchesPage() {
             <button
               onClick={() => setShowVideoGuide(true)}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/25 font-bold text-xs shadow-sm active:scale-95 transition-all"
-              title="à¦­à¦¿à¦¡à¦¿à¦“ à¦¦à§‡à¦–à§‡ à¦¶à¦¿à¦–à§à¦¨ à¦•à¦¿à¦­à¦¾à¦¬à§‡ à¦–à§‡à¦²à¦¬à§‡à¦¨"
+              title="ভিডিও দেখে শিখুন কিভাবে খেলবেন"
             >
               <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden xs:inline">à¦•à¦¿à¦­à¦¾à¦¬à§‡ à¦–à§‡à¦²à¦¬à§‡à¦¨?</span>
-              <span className="xs:hidden">à¦—à¦¾à¦‡à¦¡</span>
+              <span className="hidden xs:inline">কিভাবে খেলবেন?</span>
+              <span className="xs:hidden">গাইড</span>
             </button>
 
             <button
@@ -155,10 +150,11 @@ export default function MatchesPage() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-xs shadow-md active:scale-95"
             >
               <Plus className="w-4 h-4" />
-              <span>à¦¨à¦¤à§à¦¨ à¦®à§à¦¯à¦¾à¦š</span>
+              <span>নতুন ম্যাচ</span>
             </button>
           </div>
         </div>
+
         {/* Filter Tabs */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           {tabs.map((t) => (
@@ -186,15 +182,15 @@ export default function MatchesPage() {
         ) : matches.length === 0 ? (
           <div className="p-10 text-center bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 mt-4">
             <Swords className="w-10 h-10 mx-auto mb-3 opacity-30 text-slate-500" />
-            <p className="text-sm font-semibold">à¦•à§‹à¦¨à§‹ à¦®à§à¦¯à¦¾à¦š à¦ªà¦¾à¦“à¦¯à¦¼à¦¾ à¦¯à¦¾à¦¯à¦¼à¦¨à¦¿à¥¤</p>
+            <p className="text-sm font-semibold">কোনো ম্যাচ পাওয়া যায়নি।</p>
             <p className="text-xs text-slate-500 mt-1">
-              à¦†à¦ªà¦¨à¦¿ à¦¨à¦¿à¦œà§‡à¦‡ à¦à¦•à¦Ÿà¦¿ à¦®à§à¦¯à¦¾à¦š à¦¤à§ˆà¦°à¦¿ à¦•à¦°à¦¤à§‡ à¦ªà¦¾à¦°à§‡à¦¨ à¦à¦¬à¦‚ à¦ªà§à¦°à¦¤à¦¿à¦ªà¦•à§à¦·à¦•à§‡ à¦šà§à¦¯à¦¾à¦²à§‡à¦žà§à¦œ à¦•à¦°à¦¤à§‡ à¦ªà¦¾à¦°à§‡à¦¨!
+              আপনি নিজেই একটি ম্যাচ তৈরি করতে পারেন এবং প্রতিপক্ষকে চ্যালেঞ্জ করতে পারেন!
             </p>
             <button
               onClick={() => setCreateOpen(true)}
               className="mt-4 px-4 py-2 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs"
             >
-              à¦®à§à¦¯à¦¾à¦š à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨
+              ম্যাচ তৈরি করুন
             </button>
           </div>
         ) : (
@@ -231,7 +227,7 @@ export default function MatchesPage() {
               <div className="flex items-center gap-2">
                 <HelpCircle className="w-5 h-5 text-cyan-400" />
                 <h3 className="text-base font-black text-white">
-                  à¦²à§à¦¡à§‹ à¦–à§‡à¦²à¦¾à¦° à¦¨à¦¿à§Ÿà¦® à¦“ à¦Ÿà¦¿à¦‰à¦Ÿà§‹à¦°à¦¿à§Ÿà¦¾à¦²
+                  লুডো খেলার নিয়ম ও টিউটোরিয়াল
                 </h3>
               </div>
               <button
@@ -248,7 +244,7 @@ export default function MatchesPage() {
                 <iframe
                   className="w-full h-full"
                   src={getYoutubeEmbedUrl(matchesVideoUrl)}
-                  title="Ludo King à¦ à¦•à§€à¦­à¦¾à¦¬à§‡ à¦–à§‡à¦²à¦¬à§‡à¦¨ - à¦¸à¦®à§à¦ªà§‚à¦°à§à¦£ à¦¨à¦¿à§Ÿà¦®"
+                  title="Ludo King এ কীভাবে খেলবেন - সম্পূর্ণ নিয়ম"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />
@@ -256,7 +252,7 @@ export default function MatchesPage() {
               <div className="flex items-center justify-between text-[11px] px-1">
                 <span className="text-cyan-400 font-bold flex items-center gap-1">
                   <Play className="w-3 h-3 fill-cyan-400" />
-                  <span>à¦­à¦¿à¦¡à¦¿à¦“ à¦¦à§‡à¦–à§‡ à§§ à¦®à¦¿à¦¨à¦¿à¦Ÿà§‡ à¦¶à¦¿à¦–à§‡ à¦¨à¦¿à¦¨</span>
+                  <span>ভিডিও দেখে ১ মিনিটে শিখে নিন</span>
                 </span>
                 <a
                   href={getYoutubeWatchUrl(matchesVideoUrl)}
@@ -265,7 +261,7 @@ export default function MatchesPage() {
                   className="text-slate-400 hover:text-white hover:underline flex items-center gap-1 font-semibold"
                 >
                   <ExternalLink className="w-3 h-3" />
-                  <span>YouTube à¦ à¦¦à§‡à¦–à§à¦¨</span>
+                  <span>YouTube এ দেখুন</span>
                 </a>
               </div>
             </div>
@@ -273,21 +269,21 @@ export default function MatchesPage() {
             <div className="space-y-2 text-xs text-slate-300 pt-1">
               <div className="p-2.5 rounded-xl bg-slate-900/70 border border-slate-800 flex items-start gap-2">
                 <span className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center flex-shrink-0 text-[11px]">
-                  à§§
+                  ১
                 </span>
-                <p>à¦ªà¦›à¦¨à§à¦¦à§‡à¦° à¦à¦¨à§à¦Ÿà§à¦°à¦¿ à¦«à¦¿ à¦¦à¦¿à§Ÿà§‡ à¦®à§à¦¯à¦¾à¦šà§‡ à¦œà§Ÿà§‡à¦¨ à¦•à¦°à§à¦¨ à¦à¦¬à¦‚ à¦à¦¡à¦®à¦¿à¦¨à§‡à¦° à¦°à§à¦® à¦•à§‹à¦¡ à¦¦à§‡à¦“à§Ÿà¦¾à¦° à¦…à¦ªà§‡à¦•à§à¦·à¦¾ à¦•à¦°à§à¦¨à¥¤</p>
+                <p>পছন্দের এন্ট্রি ফি দিয়ে ম্যাচে জয়েন করুন এবং এডমিনের রুম কোড দেওয়ার অপেক্ষা করুন।</p>
               </div>
               <div className="p-2.5 rounded-xl bg-slate-900/70 border border-slate-800 flex items-start gap-2">
                 <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 font-bold flex items-center justify-center flex-shrink-0 text-[11px]">
-                  à§¨
+                  ২
                 </span>
-                <p>à¦•à§‹à¦¡ à¦ªà¦¾à¦“à§Ÿà¦¾à¦° à¦ªà¦° Ludo King à¦…à§à¦¯à¦¾à¦ªà§‡ à¦¢à§à¦•à§‡ 'Play with Friends' &gt; 'Join' à¦Ÿà§à¦¯à¦¾à¦¬à§‡ à¦•à§‹à¦¡ à¦ªà§‡à¦¸à§à¦Ÿ à¦•à¦°à§‡ à¦–à§‡à¦²à§à¦¨à¥¤</p>
+                <p>কোড পাওয়ার পর Ludo King অ্যাপে ঢুকে 'Play with Friends' &gt; 'Join' ট্যাবে কোড পেস্ট করে খেলুন।</p>
               </div>
               <div className="p-2.5 rounded-xl bg-slate-900/70 border border-slate-800 flex items-start gap-2">
                 <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center flex-shrink-0 text-[11px]">
-                  à§©
+                  ৩
                 </span>
-                <p>à¦–à§‡à¦²à¦¾ à¦¶à§‡à¦·à§‡ à¦¬à¦¿à¦œà§Ÿà§€ à¦¹à¦²à§‡ à¦‰à¦‡à¦¨à¦¿à¦‚ à¦¸à§à¦•à§à¦°à¦¿à¦¨à¦¶à¦Ÿ à¦¨à¦¿à§Ÿà§‡ à¦“à§Ÿà§‡à¦¬à¦¸à¦¾à¦‡à¦Ÿ à¦®à§à¦¯à¦¾à¦š à¦°à§à¦®à§‡ à¦¸à¦¾à¦¬à¦®à¦¿à¦Ÿ à¦•à¦°à§‡ à¦ªà§à¦°à¦¸à§à¦•à¦¾à¦° à¦¬à§à¦à§‡ à¦¨à¦¿à¦¨à¥¤</p>
+                <p>খেলা শেষে বিজয়ী হলে উইনিং স্ক্রিনশট নিয়ে ওয়েবসাইট ম্যাচ রুমে সাবমিট করে পুরস্কার বুঝে নিন।</p>
               </div>
             </div>
 
@@ -296,7 +292,7 @@ export default function MatchesPage() {
               onClick={() => setShowVideoGuide(false)}
               className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 font-black text-xs transition-all shadow-md active:scale-95"
             >
-              à¦¬à§à¦à§‡à¦›à¦¿
+              বুঝেছি
             </button>
           </div>
         </div>
