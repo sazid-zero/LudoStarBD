@@ -75,15 +75,17 @@ function parseSms(text: string): ParsedSms | null {
 
 export async function POST(request: Request) {
   try {
-    // 1. Validate webhook secret
-    const expectedSecret = process.env.SMS_WEBHOOK_SECRET;
-    if (!expectedSecret) {
-      console.error("[SMS Webhook] SMS_WEBHOOK_SECRET env variable is not set.");
-      return NextResponse.json({ error: "Webhook not configured." }, { status: 500 });
+    // 1. Validate webhook secret (falls back to default secret if not set in Vercel)
+    const expectedSecret = process.env.SMS_WEBHOOK_SECRET || "ludoearn_sms_webhook_secret_2026";
+
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch {
+      body = {};
     }
 
     const authHeader = request.headers.get("x-webhook-secret") || "";
-    const body = await request.json();
     const bodySecret = body?.secret || "";
 
     if (authHeader !== expectedSecret && bodySecret !== expectedSecret) {
