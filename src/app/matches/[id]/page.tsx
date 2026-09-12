@@ -64,6 +64,11 @@ export default function MatchDetailPage({
   const [depositOpen, setDepositOpen] = useState(false);
   const [cancellingMatch, setCancellingMatch] = useState(false);
 
+  // Forfeit timer state
+  const [forfeitRemainingMs, setForfeitRemainingMs] = React.useState<number | null>(null);
+  const [claimingForfeit, setClaimingForfeit] = React.useState(false);
+  const FORFEIT_TIMEOUT_MS = 15 * 60 * 1000;
+
   const fetchMatch = async () => {
     try {
       const res = await fetch(`/api/matches/${id}`);
@@ -84,6 +89,35 @@ export default function MatchDetailPage({
     }, 3500);
     return () => clearInterval(timer);
   }, [id]);
+
+  // Forfeit countdown timer
+  React.useEffect(() => {
+    if (!match || !user) return;
+    const myPE = match.players?.find((p) => p.userId === user.id);
+    const isP = user.id === match.creatorId || user.id === match.opponentId || match.players?.some((p) => p.userId === user.id);
+    if (match.status === "RUNNING" && isP && myPE?.result === "WON" && myPE?.submittedAt) {
+      const opp = match.players?.find((p) => p.userId !== user.id);
+      if (!opp?.result) {
+        const sub = new Date(myPE.submittedAt).getTime();
+        const tick = () => { const rem = FORFEIT_TIMEOUT_MS - (Date.now() - sub); setForfeitRemainingMs(rem > 0 ? rem : 0); };
+        tick(); const iv = setInterval(tick, 1000); return () => clearInterval(iv);
+      }
+    }
+    setForfeitRemainingMs(null);
+  }, [match, user]);
+
+  const handleClaimForfeit = async () => {
+    if (!confirm("\u09aa\u09cd\u09b0\u09a4\u09bf\u09aa\u0995\u09cd\u09b7 \u09e7\u09eb \u09ae\u09bf\u09a8\u09bf\u099f\u09c7 \u09b8\u09be\u09a1\u09bc\u09be \u09a6\u09c7\u09a8\u09a8\u09bf\u0964 \u09ab\u09b0\u09ab\u09c7\u0987\u099f \u09ac\u09bf\u099c\u09af\u09bc \u09a6\u09be\u09ac\u09bf \u0995\u09b0\u09ac\u09c7\u09a8?")) return;
+    setClaimingForfeit(true);
+    try {
+      const res = await fetch(`/api/matches/${id}/claim-forfeit`, { method: "POST", headers: { "Content-Type": "application/json" } });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "\u09ab\u09b0\u09ab\u09c7\u0987\u099f \u09a6\u09be\u09ac\u09bf \u09b8\u09ae\u09b8\u09cd\u09af\u09be");
+      showToast(data.message || "\u09ab\u09b0\u09ab\u09c7\u0987\u099f \u09ac\u09bf\u099c\u09af\u09bc!", "success");
+      await refreshUser(); await fetchMatch();
+    } catch (err: any) { showToast(err.message || "\u09b8\u09ae\u09b8\u09cd\u09af\u09be", "error"); }
+    finally { setClaimingForfeit(false); }
+  };
 
   const handleCopyRoomCode = () => {
     if (!match?.roomCode) return;
@@ -692,9 +726,40 @@ export default function MatchDetailPage({
                     </a>
                   </div>
                 )}
-                <p className="text-[11px] text-slate-400 mt-2">
-                  এডমিন যাচাই করছেন অথবা প্রতিপক্ষের রেজাল্টের অপেক্ষায় রয়েছে।
-                </p>
+                                {myResult === "WON" && forfeitRemainingMs !== null ? (
+                  <div className="mt-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-2">
+                    {forfeitRemainingMs > 0 ? (
+                      <>
+                        <p className="text-[11px] text-amber-300 font-semibold flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5" />
+                          প্রতিপক্ষের রেজাল্টের অপেক্ষায়… ১৫ মিনিট পর ফরফেইট বিজয় দাবি করতে পারবেন
+                        </p>
+                        <div className="text-center">
+                          <span className="text-2xl font-black text-amber-400 tabular-nums">
+                            {String(Math.floor(forfeitRemainingMs / 60000)).padStart(2, "0")}:{String(Math.floor((forfeitRemainingMs % 60000) / 1000)).padStart(2, "0")}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-[11px] text-rose-300 font-semibold">
+                          ⏰ সময় শেষ! প্রতিপক্ষ সাড়া দেননি। এখন ফরফেইট বিজয় দাবি করুন।
+                        </p>
+                        <button
+                          onClick={handleClaimForfeit}
+                          disabled={claimingForfeit}
+                          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 hover:to-rose-500 text-white font-black text-xs shadow-md transition-all active:scale-98 disabled:opacity-50"
+                        >
+                          {claimingForfeit ? "দাবি করা হচ্ছে..." : "🏆 ফরফেইট বিজয় দাবি করুন"}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-slate-400 mt-2">
+                    এডমিন যাচাই করছেন অথবা প্রতিপক্ষের রেজাল্টের অপেক্ষায় রয়েছে।
+                  </p>
+                )}
               </div>
             ) : (
               <form onSubmit={handleSubmitResult} className="space-y-3.5">

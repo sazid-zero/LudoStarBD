@@ -19,6 +19,7 @@ export interface MatchPlayer {
   mfsProvider?: string | null;
   result?: "WON" | "LOST" | "DISPUTE" | null;
   proofUrl?: string | null;
+  submittedAt?: string | null;
 }
 
 export interface User {

@@ -79,6 +79,8 @@ export async function POST(
       );
     }
 
+    const nowIso = new Date().toISOString();
+
     // Update current caller's result in the players list
     const updatedPlayers = currentPlayers.map((p) =>
       p.userId === user.id
@@ -86,6 +88,7 @@ export async function POST(
             ...p,
             result: result as "WON" | "LOST" | "DISPUTE",
             proofUrl: proofUrl || p.proofUrl || null,
+            submittedAt: nowIso,
           }
         : p
     );
@@ -156,7 +159,87 @@ export async function POST(
     }
 
     // =========================================================================
-    // CASE 2: MUTUAL AGREEMENT (Exactly 1 WON, and opponent confirmed LOST)
+    // CASE 2A: PLAYER CLICKS "LOST" IN 1v1 MATCH -> OPPONENT WINS INSTANTLY!
+    // The winner doesn't even need to submit anything; match auto-completes.
+    // =========================================================================
+    if (result === "LOST" && maxPlayers <= 2) {
+      const otherPlayerEntry = updatedPlayers.find((p) => p.userId !== user.id);
+      if (otherPlayerEntry) {
+        const winnerUser = await prisma.user.findUnique({
+          where: { id: otherPlayerEntry.userId },
+        });
+
+        if (winnerUser) {
+          const winnerName =
+            otherPlayerEntry.name ||
+            `${winnerUser.firstName} ${winnerUser.lastName}`.trim() ||
+            winnerUser.phone;
+
+          await prisma.$transaction([
+            prisma.user.update({
+              where: { id: otherPlayerEntry.userId },
+              data: { winBalance: { increment: match.prize } },
+            }),
+            prisma.transaction.create({
+              data: {
+                userId: otherPlayerEntry.userId,
+                userName: winnerName,
+                userPhone: winnerUser.phone,
+                type: "MATCH_WIN",
+                amount: match.prize,
+                status: "APPROVED",
+                note: `ম্যাচ #${match.matchNo} জয়ের পুরস্কার — প্রতিপক্ষ পরাজয় স্বীকার করায় সরাসরি বিজয়ী ঘোষিত`,
+              },
+            }),
+            prisma.match.update({
+              where: { id },
+              data: {
+                status: "COMPLETED",
+                winnerId: otherPlayerEntry.userId,
+                winnerName,
+                players: updatedPlayers as any,
+                creatorResult: isCreator ? "LOST" : (match.creatorResult || "WON"),
+                opponentResult: isOpponent ? "LOST" : (match.opponentResult || "WON"),
+                creatorProofUrl: isCreator && proofUrl ? proofUrl : match.creatorProofUrl,
+                opponentProofUrl: isOpponent && proofUrl ? proofUrl : match.opponentProofUrl,
+                adminNotes: `প্রতিপক্ষ (${myPlayerEntry?.name || user.firstName}) পরাজয় স্বীকার করায় সরাসরি বিজয়ী ঘোষিত`,
+              },
+            }),
+          ]);
+
+          // Notify winner
+          await prisma.notification.create({
+            data: {
+              userId: otherPlayerEntry.userId,
+              title: `🏆 অভিনন্দন! ম্যাচ #${match.matchNo} জিতেছেন!`,
+              message: `প্রতিপক্ষ পরাজয় স্বীকার করেছেন! ম্যাচ পুরস্কার ৳${match.prize} আপনার উইনিং ব্যালেন্সে যোগ হয়েছে।`,
+              type: "SUCCESS",
+              link: "/wallet",
+            },
+          });
+
+          // Notify loser
+          await prisma.notification.create({
+            data: {
+              userId: user.id,
+              title: `ম্যাচ #${match.matchNo} সমাপ্ত`,
+              message: `আপনার পরাজয় নিশ্চিত করা হয়েছে। পরবর্তী ম্যাচে শুভকামনা!`,
+              type: "INFO",
+              link: `/matches/${match.id}`,
+            },
+          });
+
+          return NextResponse.json({
+            success: true,
+            completed: true,
+            message: "পরাজয় নিশ্চিত করা হয়েছে। প্রতিপক্ষকে সরাসরি বিজয়ী ঘোষণা করে পুরস্কার প্রদান করা হয়েছে।",
+          });
+        }
+      }
+    }
+
+    // =========================================================================
+    // CASE 2B: MUTUAL AGREEMENT (Exactly 1 WON, and opponent confirmed LOST)
     // =========================================================================
     if (winners.length === 1 && losers.length >= 1) {
       const winnerEntry = winners[0];
