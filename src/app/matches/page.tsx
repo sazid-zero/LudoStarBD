@@ -7,7 +7,7 @@ import { useToast } from "@/components/common/ToastContext";
 import MatchCard from "@/components/matches/MatchCard";
 import CreateMatchModal from "@/components/matches/CreateMatchModal";
 import { Match } from "@/lib/types";
-import { Swords, Plus, RefreshCw, Wifi, HelpCircle, Play, X, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
+import { Swords, Plus, RefreshCw, HelpCircle, Play, X, ExternalLink } from "lucide-react";
 import { getYoutubeEmbedUrl, getYoutubeWatchUrl } from "@/lib/youtube";
 
 export default function MatchesPage() {
@@ -23,9 +23,8 @@ export default function MatchesPage() {
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  // Video guide state
+  // Video URL for tutorial (used in MatchCard "কিভাবে খেলবেন?" modal and page guide modal)
   const [matchesVideoUrl, setMatchesVideoUrl] = useState("https://www.youtube.com/watch?v=Y7VWtTgX0Rc");
-  const [showVideoBanner, setShowVideoBanner] = useState(true);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -76,7 +75,7 @@ export default function MatchesPage() {
 
   const handleJoin = async (matchId: string) => {
     if (!user) {
-      showToast("ম্যাচে জয়েন করতে আগে লগইন করুন", "error");
+      showToast("à¦®à§à¦¯à¦¾à¦šà§‡ à¦œà¦¯à¦¼à§‡à¦¨ à¦•à¦°à¦¤à§‡ à¦†à¦—à§‡ à¦²à¦—à¦‡à¦¨ à¦•à¦°à§à¦¨", "error");
       return;
     }
 
@@ -87,31 +86,31 @@ export default function MatchesPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "ম্যাচে জয়েন করতে সমস্যা হয়েছে");
+        throw new Error(data.error || "à¦®à§à¦¯à¦¾à¦šà§‡ à¦œà¦¯à¦¼à§‡à¦¨ à¦•à¦°à¦¤à§‡ à¦¸à¦®à¦¸à§à¦¯à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡");
       }
 
-      showToast(data.message || "সফলভাবে ম্যাচে যুক্ত হয়েছেন!", "success");
+      showToast(data.message || "à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦®à§à¦¯à¦¾à¦šà§‡ à¦¯à§à¦•à§à¦¤ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¦¨!", "success");
       await refreshUser();
       await fetchMatches();
     } catch (err: any) {
-      showToast(err.message || "সমস্যা হয়েছে", "error");
+      showToast(err.message || "à¦¸à¦®à¦¸à§à¦¯à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡", "error");
     } finally {
       setJoiningId(null);
     }
   };
 
   const tabs = [
-    { id: "ALL", label: "সব ম্যাচ" },
-    { id: "WAITING", label: "অপেক্ষমাণ" },
-    { id: "RUNNING", label: "চলমান" },
-    { id: "MY", label: "আমার ম্যাচ" },
-    { id: "COMPLETED", label: "সমাপ্ত" },
+    { id: "ALL", label: "à¦¸à¦¬ à¦®à§à¦¯à¦¾à¦š" },
+    { id: "WAITING", label: "à¦…à¦ªà§‡à¦•à§à¦·à¦®à¦¾à¦£" },
+    { id: "RUNNING", label: "à¦šà¦²à¦®à¦¾à¦¨" },
+    { id: "MY", label: "à¦†à¦®à¦¾à¦° à¦®à§à¦¯à¦¾à¦š" },
+    { id: "COMPLETED", label: "à¦¸à¦®à¦¾à¦ªà§à¦¤" },
   ] as const;
 
   const totalBalance = (user?.mainBalance || 0) + (user?.winBalance || 0);
 
   return (
-    <AppShell title="লুডো ম্যাচ এরিনা">
+    <AppShell title="à¦²à§à¦¡à§‹ à¦®à§à¦¯à¦¾à¦š à¦à¦°à¦¿à¦¨à¦¾">
       <div className="p-3.5 space-y-3.5">
         {/* Header & Create Button */}
         <div className="flex items-center justify-between">
@@ -136,7 +135,7 @@ export default function MatchesPage() {
             <button
               onClick={() => fetchMatches()}
               className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white active:scale-95"
-              title="রিফ্রেশ"
+              title="à¦°à¦¿à¦«à§à¦°à§‡à¦¶"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
             </button>
@@ -144,11 +143,11 @@ export default function MatchesPage() {
             <button
               onClick={() => setShowVideoGuide(true)}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/25 font-bold text-xs shadow-sm active:scale-95 transition-all"
-              title="ভিডিও দেখে শিখুন কিভাবে খেলবেন"
+              title="à¦­à¦¿à¦¡à¦¿à¦“ à¦¦à§‡à¦–à§‡ à¦¶à¦¿à¦–à§à¦¨ à¦•à¦¿à¦­à¦¾à¦¬à§‡ à¦–à§‡à¦²à¦¬à§‡à¦¨"
             >
               <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden xs:inline">কিভাবে খেলবেন?</span>
-              <span className="xs:hidden">গাইড</span>
+              <span className="hidden xs:inline">à¦•à¦¿à¦­à¦¾à¦¬à§‡ à¦–à§‡à¦²à¦¬à§‡à¦¨?</span>
+              <span className="xs:hidden">à¦—à¦¾à¦‡à¦¡</span>
             </button>
 
             <button
@@ -156,69 +155,10 @@ export default function MatchesPage() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-xs shadow-md active:scale-95"
             >
               <Plus className="w-4 h-4" />
-              <span>নতুন ম্যাচ</span>
+              <span>à¦¨à¦¤à§à¦¨ à¦®à§à¦¯à¦¾à¦š</span>
             </button>
           </div>
         </div>
-
-        {/* Under Ludo Matches Title: How to Play Video Guide Card */}
-        <div className="rounded-2xl bg-gradient-to-b from-[#0d172e] via-[#091024] to-[#060a17] border border-cyan-500/30 overflow-hidden shadow-lg shadow-cyan-950/30">
-          <div className="p-3 sm:p-3.5 flex items-center justify-between border-b border-cyan-500/20 bg-cyan-950/25">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 shadow-sm shadow-cyan-500/20">
-                <Play className="w-4 h-4 fill-cyan-400 ml-0.5" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <h3 className="text-xs sm:text-sm font-black text-white truncate">
-                    লুডো খেলার নিয়ম ও ভিডিও গাইড
-                  </h3>
-                  <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 uppercase">
-                    কিভাবে খেলবেন
-                  </span>
-                </div>
-                <p className="text-[10px] text-slate-400 truncate">
-                  ম্যাচে জয়েন, রুম কোড ব্যবহার এবং খেলার সম্পূর্ণ নিয়মাবলী
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              <a
-                href={getYoutubeWatchUrl(matchesVideoUrl)}
-                target="_blank"
-                rel="noreferrer"
-                className="text-[11px] font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all active:scale-95"
-                title="YouTube-এ ওপেন করুন"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">YouTube</span>
-              </a>
-              <button
-                onClick={() => setShowVideoBanner(!showVideoBanner)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800/60 transition-all"
-                aria-label="ভিডিও মিনিমাইজ করুন"
-                title={showVideoBanner ? "ভিডিও মিনিমাইজ করুন" : "ভিডিও ওপেন করুন"}
-              >
-                {showVideoBanner ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          {showVideoBanner && (
-            <div className="p-3 bg-black/40">
-              <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-cyan-500/30 shadow-2xl">
-                <iframe
-                  className="w-full h-full"
-                  src={getYoutubeEmbedUrl(matchesVideoUrl)}
-                  title="লুডো খেলার সম্পূর্ণ নিয়ম - LudoStar BD"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Filter Tabs */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           {tabs.map((t) => (
@@ -246,15 +186,15 @@ export default function MatchesPage() {
         ) : matches.length === 0 ? (
           <div className="p-10 text-center bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 mt-4">
             <Swords className="w-10 h-10 mx-auto mb-3 opacity-30 text-slate-500" />
-            <p className="text-sm font-semibold">কোনো ম্যাচ পাওয়া যায়নি।</p>
+            <p className="text-sm font-semibold">à¦•à§‹à¦¨à§‹ à¦®à§à¦¯à¦¾à¦š à¦ªà¦¾à¦“à¦¯à¦¼à¦¾ à¦¯à¦¾à¦¯à¦¼à¦¨à¦¿à¥¤</p>
             <p className="text-xs text-slate-500 mt-1">
-              আপনি নিজেই একটি ম্যাচ তৈরি করতে পারেন এবং প্রতিপক্ষকে চ্যালেঞ্জ করতে পারেন!
+              à¦†à¦ªà¦¨à¦¿ à¦¨à¦¿à¦œà§‡à¦‡ à¦à¦•à¦Ÿà¦¿ à¦®à§à¦¯à¦¾à¦š à¦¤à§ˆà¦°à¦¿ à¦•à¦°à¦¤à§‡ à¦ªà¦¾à¦°à§‡à¦¨ à¦à¦¬à¦‚ à¦ªà§à¦°à¦¤à¦¿à¦ªà¦•à§à¦·à¦•à§‡ à¦šà§à¦¯à¦¾à¦²à§‡à¦žà§à¦œ à¦•à¦°à¦¤à§‡ à¦ªà¦¾à¦°à§‡à¦¨!
             </p>
             <button
               onClick={() => setCreateOpen(true)}
               className="mt-4 px-4 py-2 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs"
             >
-              ম্যাচ তৈরি করুন
+              à¦®à§à¦¯à¦¾à¦š à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨
             </button>
           </div>
         ) : (
@@ -291,7 +231,7 @@ export default function MatchesPage() {
               <div className="flex items-center gap-2">
                 <HelpCircle className="w-5 h-5 text-cyan-400" />
                 <h3 className="text-base font-black text-white">
-                  লুডো খেলার নিয়ম ও টিউটোরিয়াল
+                  à¦²à§à¦¡à§‹ à¦–à§‡à¦²à¦¾à¦° à¦¨à¦¿à§Ÿà¦® à¦“ à¦Ÿà¦¿à¦‰à¦Ÿà§‹à¦°à¦¿à§Ÿà¦¾à¦²
                 </h3>
               </div>
               <button
@@ -308,7 +248,7 @@ export default function MatchesPage() {
                 <iframe
                   className="w-full h-full"
                   src={getYoutubeEmbedUrl(matchesVideoUrl)}
-                  title="Ludo King এ কীভাবে খেলবেন - সম্পূর্ণ নিয়ম"
+                  title="Ludo King à¦ à¦•à§€à¦­à¦¾à¦¬à§‡ à¦–à§‡à¦²à¦¬à§‡à¦¨ - à¦¸à¦®à§à¦ªà§‚à¦°à§à¦£ à¦¨à¦¿à§Ÿà¦®"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />
@@ -316,7 +256,7 @@ export default function MatchesPage() {
               <div className="flex items-center justify-between text-[11px] px-1">
                 <span className="text-cyan-400 font-bold flex items-center gap-1">
                   <Play className="w-3 h-3 fill-cyan-400" />
-                  <span>ভিডিও দেখে ১ মিনিটে শিখে নিন</span>
+                  <span>à¦­à¦¿à¦¡à¦¿à¦“ à¦¦à§‡à¦–à§‡ à§§ à¦®à¦¿à¦¨à¦¿à¦Ÿà§‡ à¦¶à¦¿à¦–à§‡ à¦¨à¦¿à¦¨</span>
                 </span>
                 <a
                   href={getYoutubeWatchUrl(matchesVideoUrl)}
@@ -325,7 +265,7 @@ export default function MatchesPage() {
                   className="text-slate-400 hover:text-white hover:underline flex items-center gap-1 font-semibold"
                 >
                   <ExternalLink className="w-3 h-3" />
-                  <span>YouTube এ দেখুন</span>
+                  <span>YouTube à¦ à¦¦à§‡à¦–à§à¦¨</span>
                 </a>
               </div>
             </div>
@@ -333,21 +273,21 @@ export default function MatchesPage() {
             <div className="space-y-2 text-xs text-slate-300 pt-1">
               <div className="p-2.5 rounded-xl bg-slate-900/70 border border-slate-800 flex items-start gap-2">
                 <span className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center flex-shrink-0 text-[11px]">
-                  ১
+                  à§§
                 </span>
-                <p>পছন্দের এন্ট্রি ফি দিয়ে ম্যাচে জয়েন করুন এবং এডমিনের রুম কোড দেওয়ার অপেক্ষা করুন।</p>
+                <p>à¦ªà¦›à¦¨à§à¦¦à§‡à¦° à¦à¦¨à§à¦Ÿà§à¦°à¦¿ à¦«à¦¿ à¦¦à¦¿à§Ÿà§‡ à¦®à§à¦¯à¦¾à¦šà§‡ à¦œà§Ÿà§‡à¦¨ à¦•à¦°à§à¦¨ à¦à¦¬à¦‚ à¦à¦¡à¦®à¦¿à¦¨à§‡à¦° à¦°à§à¦® à¦•à§‹à¦¡ à¦¦à§‡à¦“à§Ÿà¦¾à¦° à¦…à¦ªà§‡à¦•à§à¦·à¦¾ à¦•à¦°à§à¦¨à¥¤</p>
               </div>
               <div className="p-2.5 rounded-xl bg-slate-900/70 border border-slate-800 flex items-start gap-2">
                 <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 font-bold flex items-center justify-center flex-shrink-0 text-[11px]">
-                  ২
+                  à§¨
                 </span>
-                <p>কোড পাওয়ার পর Ludo King অ্যাপে ঢুকে 'Play with Friends' &gt; 'Join' ট্যাবে কোড পেস্ট করে খেলুন।</p>
+                <p>à¦•à§‹à¦¡ à¦ªà¦¾à¦“à§Ÿà¦¾à¦° à¦ªà¦° Ludo King à¦…à§à¦¯à¦¾à¦ªà§‡ à¦¢à§à¦•à§‡ 'Play with Friends' &gt; 'Join' à¦Ÿà§à¦¯à¦¾à¦¬à§‡ à¦•à§‹à¦¡ à¦ªà§‡à¦¸à§à¦Ÿ à¦•à¦°à§‡ à¦–à§‡à¦²à§à¦¨à¥¤</p>
               </div>
               <div className="p-2.5 rounded-xl bg-slate-900/70 border border-slate-800 flex items-start gap-2">
                 <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center flex-shrink-0 text-[11px]">
-                  ৩
+                  à§©
                 </span>
-                <p>খেলা শেষে বিজয়ী হলে উইনিং স্ক্রিনশট নিয়ে ওয়েবসাইট ম্যাচ রুমে সাবমিট করে পুরস্কার বুঝে নিন।</p>
+                <p>à¦–à§‡à¦²à¦¾ à¦¶à§‡à¦·à§‡ à¦¬à¦¿à¦œà§Ÿà§€ à¦¹à¦²à§‡ à¦‰à¦‡à¦¨à¦¿à¦‚ à¦¸à§à¦•à§à¦°à¦¿à¦¨à¦¶à¦Ÿ à¦¨à¦¿à§Ÿà§‡ à¦“à§Ÿà§‡à¦¬à¦¸à¦¾à¦‡à¦Ÿ à¦®à§à¦¯à¦¾à¦š à¦°à§à¦®à§‡ à¦¸à¦¾à¦¬à¦®à¦¿à¦Ÿ à¦•à¦°à§‡ à¦ªà§à¦°à¦¸à§à¦•à¦¾à¦° à¦¬à§à¦à§‡ à¦¨à¦¿à¦¨à¥¤</p>
               </div>
             </div>
 
@@ -356,7 +296,7 @@ export default function MatchesPage() {
               onClick={() => setShowVideoGuide(false)}
               className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 font-black text-xs transition-all shadow-md active:scale-95"
             >
-              বুঝেছি
+              à¦¬à§à¦à§‡à¦›à¦¿
             </button>
           </div>
         </div>
