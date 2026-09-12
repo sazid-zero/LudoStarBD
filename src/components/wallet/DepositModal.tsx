@@ -66,6 +66,7 @@ export default function DepositModal({ isOpen, onClose, onSuccess }: DepositModa
           amount: Number(amount),
           mfsProvider: provider,
           accountNumber: accountNumber.trim(),
+          senderPhone: accountNumber.trim(),
           trxId: trxId.trim().toUpperCase(),
         }),
       });

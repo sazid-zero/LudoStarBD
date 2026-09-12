@@ -8,18 +8,19 @@ export async function POST(request: Request) {
     if (!user) return NextResponse.json({ error: "অননুমোদিত এক্সেস। লগইন করুন।" }, { status: 401 });
 
     const body = await request.json();
-    const { amount, mfsProvider, senderPhone, trxId } = body;
+    const { amount, mfsProvider, trxId } = body;
+    const sender = (body.senderPhone || body.accountNumber || "").toString().trim();
 
     const depositAmount = Number(amount);
-    if (!depositAmount || depositAmount < 50) {
-      return NextResponse.json({ error: "সর্বনিম্ন ডিপোজিটের পরিমাণ ৫০ টাকা।" }, { status: 400 });
+    if (!depositAmount || depositAmount < 20) {
+      return NextResponse.json({ error: "সর্বনিম্ন ডিপোজিটের পরিমাণ ২০ টাকা।" }, { status: 400 });
     }
 
     if (!mfsProvider || !["BKASH", "NAGAD", "ROCKET"].includes(mfsProvider)) {
       return NextResponse.json({ error: "সঠিক পেমেন্ট মেথড নির্বাচন করুন (বিকাশ, নগদ, অথবা রকেট)।" }, { status: 400 });
     }
 
-    if (!senderPhone || !/^01[3-9]\d{8}$/.test(senderPhone.trim())) {
+    if (!sender || !/^01[3-9]\d{8}$/.test(sender)) {
       return NextResponse.json({ error: "সঠিক ১১ ডিজিটের সেন্ডার মোবাইল নম্বর দিন।" }, { status: 400 });
     }
 
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
             amount: depositAmount,
             status: "APPROVED",
             mfsProvider: mfsProvider as any,
-            accountNumber: senderPhone.trim(),
+            accountNumber: sender,
             trxId: trxId.trim(),
             note: `স্বয়ংক্রিয় যাচাই সম্পন্ন (SMS Matching)। TrxID: ${trxId.trim()}`,
           },
@@ -98,7 +99,7 @@ export async function POST(request: Request) {
         amount: depositAmount,
         status: "PENDING",
         mfsProvider: mfsProvider as any,
-        accountNumber: senderPhone.trim(),
+        accountNumber: sender,
         trxId: trxId.trim(),
         note: `${mfsProvider} থেকে ${depositAmount} টাকা ডিপোজিট রিকোয়েস্ট (এডমিন যাচাই পেন্ডিং)`,
       },
