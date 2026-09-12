@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
@@ -77,83 +79,104 @@ export async function POST(
       );
     }
 
-    // --- CORE LOGIC ---
-    // Philosophy: "Winner submits WON + screenshot → auto-credited instantly"
-    // Losers don't need to do anything. The Ludo King app shows results clearly.
-    // If two people claim WON → dispute for admin to resolve.
+    // Update current caller's result in the players list
+    const updatedPlayers = currentPlayers.map((p) =>
+      p.userId === user.id
+        ? {
+            ...p,
+            result: result as "WON" | "LOST" | "DISPUTE",
+            proofUrl: proofUrl || p.proofUrl || null,
+          }
+        : p
+    );
 
-    if (result === "WON") {
-      // Check if any other player already claimed WON
-      const existingWinnerEntry = currentPlayers.find(
-        (p) => p.result === "WON" && p.userId !== user.id
-      );
-      const alsoLegacyWin =
-        (match.creatorResult === "WON" && match.creatorId !== user.id) ||
-        (match.opponentResult === "WON" && match.opponentId !== user.id);
+    // Count results across all players
+    const winners = updatedPlayers.filter((p) => p.result === "WON");
+    const losers = updatedPlayers.filter((p) => p.result === "LOST");
+    const disputes = updatedPlayers.filter((p) => p.result === "DISPUTE");
 
-      if (existingWinnerEntry || alsoLegacyWin) {
-        // Conflict: multiple WON claims → DISPUTE
-        const updatedPlayers = currentPlayers.map((p) =>
-          p.userId === user.id ? { ...p, result: "WON" as const, proofUrl: proofUrl || null } : p
-        );
+    // Also check legacy fields in case of legacy records
+    const legacyOtherWon =
+      (isCreator && match.opponentResult === "WON") ||
+      (isOpponent && match.creatorResult === "WON");
 
-        await prisma.match.update({
-          where: { id },
-          data: {
-            status: "DISPUTED",
-            players: updatedPlayers as any,
-            creatorResult: isCreator ? "WON" : match.creatorResult,
-            opponentResult: isOpponent ? "WON" : match.opponentResult,
-            creatorProofUrl: isCreator && proofUrl ? proofUrl : match.creatorProofUrl,
-            opponentProofUrl: isOpponent && proofUrl ? proofUrl : match.opponentProofUrl,
-            disputeReason:
-              disputeReason?.trim() ||
-              "একাধিক খেলোয়াড় জয়ের দাবি করেছেন। এডমিন স্ক্রিনশট যাচাই করে সিদ্ধান্ত নেবেন।",
-          },
-        });
+    // =========================================================================
+    // CASE 1: CONFLICT / DISPUTE (Multiple claim WON, or anyone claims DISPUTE)
+    // =========================================================================
+    if (winners.length > 1 || legacyOtherWon || disputes.length > 0 || result === "DISPUTE") {
+      const reasonText =
+        disputeReason?.trim() ||
+        (winners.length > 1 || legacyOtherWon
+          ? "উভয় খেলোয়াড়ই জয়ের দাবি করেছেন (বিরোধপূর্ণ)। এডমিন স্ক্রিনশট যাচাই করে সঠিক বিজয়ী নির্ধারণ করবেন।"
+          : "একজন খেলোয়াড় বিরোধ জানিয়েছেন। এডমিন স্ক্রিনশট দেখে সিদ্ধান্ত নেবেন।");
 
-        // Notify admin-level notification (ALL admins)
+      await prisma.match.update({
+        where: { id },
+        data: {
+          status: "DISPUTED",
+          players: updatedPlayers as any,
+          creatorResult: isCreator ? result : match.creatorResult,
+          opponentResult: isOpponent ? result : match.opponentResult,
+          creatorProofUrl: isCreator && proofUrl ? proofUrl : match.creatorProofUrl,
+          opponentProofUrl: isOpponent && proofUrl ? proofUrl : match.opponentProofUrl,
+          disputeReason: reasonText,
+        },
+      });
+
+      // Send Cheat/Conflict Warning Notice to ALL participants
+      for (const p of updatedPlayers) {
         await prisma.notification.create({
           data: {
-            userId: "ALL",
-            title: `⚠️ ম্যাচ #${match.matchNo} বিরোধ!`,
-            message: `একাধিক খেলোয়াড় জয়ের দাবি করেছেন। স্ক্রিনশট যাচাই করে সিদ্ধান্ত নিন।`,
+            userId: p.userId,
+            title: `⚠️ ম্যাচ #${match.matchNo} বিরোধ সনাক্ত হয়েছে!`,
+            message: `উভয় খেলোয়াড়ই জয়ের দাবি করেছেন। ম্যাচটি এডমিন রিভিউতে গেছে। মিথ্যা প্রমাণ বা ভুয়া স্ক্রিনশট দিলে অ্যাকাউন্ট স্থায়ীভাবে ব্যান ও ব্যালেন্স বাজেয়াপ্ত হবে।`,
             type: "ALERT",
-            link: `/admin/matches?status=DISPUTED`,
+            link: `/matches/${match.id}`,
           },
-        });
-
-        return NextResponse.json({
-          success: false,
-          disputed: true,
-          message:
-            "⚠️ একাধিক খেলোয়াড় জয় দাবি করেছেন! ম্যাচটি বিরোধাধীন (DISPUTED) হয়েছে। এডমিন স্ক্রিনশট দেখে সিদ্ধান্ত নেবেন।",
         });
       }
 
-      // === AUTO-WIN: First and only WON claim → instant prize credit ===
+      // Alert ALL Admins
+      await prisma.notification.create({
+        data: {
+          userId: "ALL",
+          title: `🚨 ম্যাচ #${match.matchNo} বিরোধ! উভয় খেলোয়াড় জয়ের দাবি করেছেন`,
+          message: `${match.creatorName || "খেলোয়াড় ১"} ও ${match.opponentName || "খেলোয়াড় ২"} উভয়ই জয়ের দাবি করেছেন। এডমিন প্যানেল থেকে স্ক্রিনশট যাচাই করুন।`,
+          type: "ALERT",
+          link: `/admin`,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        disputed: true,
+        message:
+          "⚠️ বিরোধ সনাক্ত হয়েছে! উভয় খেলোয়াড়ই জয়ের দাবি করায় কোনো অর্থ প্রদান করা হয়নি। এডমিন স্ক্রিনশট যাচাই করে চূড়ান্ত সিদ্ধান্ত নেবেন। ভুয়া তথ্যের জন্য আইডি ব্যান হতে পারে।",
+      });
+    }
+
+    // =========================================================================
+    // CASE 2: MUTUAL AGREEMENT (Exactly 1 WON, and opponent confirmed LOST)
+    // =========================================================================
+    if (winners.length === 1 && losers.length >= 1) {
+      const winnerEntry = winners[0];
       const winnerUser = await prisma.user.findUnique({
-        where: { id: user.id },
+        where: { id: winnerEntry.userId },
       });
 
       if (!winnerUser) {
-        return NextResponse.json({ error: "ইউজার পাওয়া যায়নি" }, { status: 404 });
+        return NextResponse.json({ error: "বিজয়ী ইউজার পাওয়া যায়নি" }, { status: 404 });
       }
 
       const winnerName =
-        myPlayerEntry?.name ||
+        winnerEntry.name ||
         `${winnerUser.firstName} ${winnerUser.lastName}`.trim() ||
         winnerUser.phone;
-
-      // Update players[] with winner's result
-      const updatedPlayers = currentPlayers.map((p) =>
-        p.userId === user.id ? { ...p, result: "WON" as const, proofUrl: proofUrl || null } : p
-      );
 
       await prisma.$transaction([
         // Credit winner's winBalance
         prisma.user.update({
-          where: { id: user.id },
+          where: { id: winnerEntry.userId },
           data: {
             winBalance: { increment: match.prize },
           },
@@ -161,26 +184,25 @@ export async function POST(
         // Record win transaction
         prisma.transaction.create({
           data: {
-            userId: user.id,
+            userId: winnerEntry.userId,
             userName: winnerName,
             userPhone: winnerUser.phone,
             type: "MATCH_WIN",
             amount: match.prize,
             status: "APPROVED",
-            note: `ম্যাচ #${match.matchNo} জয়ের পুরস্কার (${maxPlayers} জন খেলোয়াড়) — স্বয়ংক্রিয়ভাবে জমা হয়েছে`,
+            note: `ম্যাচ #${match.matchNo} জয়ের পুরস্কার (${maxPlayers} জন খেলোয়াড়) — উভয় খেলোয়াড়ের ফলাফল নিশ্চিত`,
           },
         }),
-        // Update match
+        // Update match to COMPLETED
         prisma.match.update({
           where: { id },
           data: {
             status: "COMPLETED",
-            winnerId: user.id,
+            winnerId: winnerEntry.userId,
             winnerName,
             players: updatedPlayers as any,
-            // Legacy fields for 2-player backward compat
-            creatorResult: isCreator ? "WON" : match.creatorResult,
-            opponentResult: isOpponent ? "WON" : match.opponentResult,
+            creatorResult: isCreator ? result : match.creatorResult,
+            opponentResult: isOpponent ? result : match.opponentResult,
             creatorProofUrl: isCreator && proofUrl ? proofUrl : match.creatorProofUrl,
             opponentProofUrl: isOpponent && proofUrl ? proofUrl : match.opponentProofUrl,
           },
@@ -190,22 +212,22 @@ export async function POST(
       // Notify winner
       await prisma.notification.create({
         data: {
-          userId: user.id,
+          userId: winnerEntry.userId,
           title: `🏆 অভিনন্দন! ম্যাচ #${match.matchNo} জিতেছেন!`,
-          message: `স্ক্রিনশট যাচাই হয়েছে! ৳${match.prize} আপনার উইনিং ব্যালেন্সে যোগ হয়েছে।`,
+          message: `উভয় খেলোয়াড়ের ফলাফল যাচাই হয়েছে! ৳${match.prize} আপনার উইনিং ব্যালেন্সে যোগ হয়েছে।`,
           type: "SUCCESS",
           link: "/wallet",
         },
       });
 
-      // Notify all other players (losers)
-      for (const p of currentPlayers) {
-        if (p.userId !== user.id) {
+      // Notify loser(s)
+      for (const p of updatedPlayers) {
+        if (p.userId !== winnerEntry.userId) {
           await prisma.notification.create({
             data: {
               userId: p.userId,
               title: `ম্যাচ #${match.matchNo} সমাপ্ত`,
-              message: `${winnerName} বিজয়ী হয়েছেন। পরবর্তী ম্যাচে চেষ্টা করুন!`,
+              message: `${winnerName} বিজয়ী হয়েছেন। পরবর্তী ম্যাচে শুভকামনা!`,
               type: "INFO",
               link: `/matches/${match.id}`,
             },
@@ -215,59 +237,49 @@ export async function POST(
 
       return NextResponse.json({
         success: true,
-        autoResolved: true,
-        message: `🏆 অভিনন্দন! ম্যাচ #${match.matchNo} জয়ী! ৳${match.prize} আপনার উইনিং ব্যালেন্সে যোগ হয়েছে।`,
+        completed: true,
+        message: `🏆 ম্যাচ সমাপ্ত! ${winnerName} বিজয়ী হয়েছেন এবং ৳${match.prize} ব্যালেন্সে যোগ হয়েছে।`,
       });
     }
 
-    // result === "LOST" or "DISPUTE"
-    // Update the player's entry in players[] and legacy fields
-    const updatedPlayers = currentPlayers.map((p) =>
-      p.userId === user.id ? { ...p, result: result as "LOST" | "DISPUTE", proofUrl: proofUrl || null } : p
-    );
+    // =========================================================================
+    // CASE 3: PENDING OPPONENT (Single player submitted, waiting for other)
+    // =========================================================================
+    await prisma.match.update({
+      where: { id },
+      data: {
+        players: updatedPlayers as any,
+        creatorResult: isCreator ? result : match.creatorResult,
+        opponentResult: isOpponent ? result : match.opponentResult,
+        creatorProofUrl: isCreator && proofUrl ? proofUrl : match.creatorProofUrl,
+        opponentProofUrl: isOpponent && proofUrl ? proofUrl : match.opponentProofUrl,
+      },
+    });
 
-    const matchUpdates: any = {
-      players: updatedPlayers as any,
-      creatorResult: isCreator ? result : match.creatorResult,
-      opponentResult: isOpponent ? result : match.opponentResult,
-      creatorProofUrl: isCreator && proofUrl ? proofUrl : match.creatorProofUrl,
-      opponentProofUrl: isOpponent && proofUrl ? proofUrl : match.opponentProofUrl,
-    };
-
-    if (result === "DISPUTE") {
-      matchUpdates.status = "DISPUTED";
-      matchUpdates.disputeReason =
-        disputeReason?.trim() || "একজন খেলোয়াড় বিরোধ জানিয়েছেন। এডমিন স্ক্রিনশট দেখে সিদ্ধান্ত নেবেন।";
-
-      // Notify all other players in the match
-      for (const p of currentPlayers) {
-        if (p.userId !== user.id) {
-          await prisma.notification.create({
-            data: {
-              userId: p.userId,
-              title: `⚠️ ম্যাচ #${match.matchNo} বিরোধ!`,
-              message: "একজন খেলোয়াড় বিরোধ জানিয়েছেন। এডমিন শীঘ্রই সমাধান করবেন।",
-              type: "ALERT",
-              link: `/matches/${match.id}`,
-            },
-          });
-        }
+    // Notify the other player(s) that opponent submitted
+    for (const p of updatedPlayers) {
+      if (p.userId !== user.id && !p.result) {
+        await prisma.notification.create({
+          data: {
+            userId: p.userId,
+            title: `🎮 ম্যাচ #${match.matchNo}: প্রতিপক্ষ ফলাফল জমা দিয়েছেন`,
+            message: `${myPlayerEntry?.name || user.firstName} ফলাফল জমা দিয়েছেন (${result === "WON" ? "জয়ের দাবি করেছেন" : "পরাজয় নিশ্চিত করেছেন"})। দয়া করে আপনার ফলাফল জমা দিন।`,
+            type: "INFO",
+            link: `/matches/${match.id}`,
+          },
+        });
       }
     }
 
-    await prisma.match.update({
-      where: { id },
-      data: matchUpdates,
-    });
-
-    const messageText =
-      result === "DISPUTE"
-        ? "বিরোধ জানানো হয়েছে। এডমিন স্ক্রিনশট যাচাই করে সিদ্ধান্ত নেবেন।"
-        : "পরাজয় নিশ্চিত করা হয়েছে। পরবর্তী ম্যাচে শুভকামনা!";
+    const statusMsg =
+      result === "WON"
+        ? "আপনার জয়ের দাবি ও প্রমাণ জমা হয়েছে! প্রতিপক্ষের ফলাফলের অপেক্ষা করা হচ্ছে। প্রতিপক্ষ নিশ্চিত করলে বা এডমিন অনুমোদন দিলে ব্যালেন্স যোগ হবে।"
+        : "আপনার ফলাফল জমা হয়েছে। প্রতিপক্ষের ফলাফলের অপেক্ষা করা হচ্ছে।";
 
     return NextResponse.json({
       success: true,
-      message: messageText,
+      pendingOpponent: true,
+      message: statusMsg,
     });
   } catch (error) {
     console.error("Error submitting result:", error);

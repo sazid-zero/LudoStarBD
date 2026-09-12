@@ -647,8 +647,27 @@ export default function MatchDetailPage({
           </div>
         )}
 
-        {/* Result Submission Section (Only for participants when RUNNING or DISPUTED) */}
-        {isParticipant && match.status !== "COMPLETED" && (
+        {/* Dispute Announcement if Disputed */}
+        {match.status === "DISPUTED" && (
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-rose-950/60 via-amber-950/30 to-slate-950 border border-rose-500/50 text-center space-y-2.5 shadow-lg shadow-rose-950/30">
+            <div className="w-12 h-12 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-400 mx-auto flex items-center justify-center animate-pulse">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-black text-rose-300">
+              ⚠️ ম্যাচটি বিরোধপূর্ণ (DISPUTED) — এডমিন পর্যালোচনাধীন
+            </h3>
+            <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
+              {match.disputeReason || "উভয় খেলোয়াড়ই জয়ের দাবি করায় ফলাফল স্থগিত রাখা হয়েছে। এডমিন উভয় পক্ষের স্ক্রিনশট যাচাই করে সঠিক বিজয়ীকে পুরস্কৃত করবেন।"}
+            </p>
+            <div className="p-3 rounded-xl bg-red-950/50 border border-red-500/30 text-[11px] text-red-200 text-left space-y-1">
+              <span className="font-bold block text-red-400">🚨 ভুয়া দাবির বিরুদ্ধে কঠোর সতর্কতা:</span>
+              <span>এডমিন স্ক্রিনশটের সময়, গেম ট্রানজ্যাকশন আইডি ও রুম কোড মিলিয়ে ফলাফল যাচাই করবেন। যে খেলোয়াড় ভুয়া বা এডিটেড স্ক্রিনশট দিয়েছেন, তার অ্যাকাউন্ট স্থায়ীভাবে ব্যান এবং সকল ব্যালেন্স বাজেয়াপ্ত করা হবে।</span>
+            </div>
+          </div>
+        )}
+
+        {/* Result Submission Section (Only for participants when RUNNING) */}
+        {isParticipant && match.status === "RUNNING" && (
           <div className="p-4 rounded-2xl bg-[#0e1428] border border-[#212b48] shadow-xl">
             <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
               <Trophy className="w-4 h-4 text-amber-400" />
@@ -773,12 +792,12 @@ export default function MatchDetailPage({
                   </div>
                 )}
 
-                {/* Info Banner about auto-credit */}
+                {/* Info Banner about win result */}
                 {selectedResult === "WON" && (
                   <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-200 flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                     <span>
-                      <strong>স্ক্রিনশট সহ জমা দিলে সাথে সাথে ব্যালেন্সে যোগ হবে!</strong> Ludo King-এর নিজস্ব রিজাল্ট স্ক্রিনশট আপলোড করুন — এডমিনের অপেক্ষা ছাড়াই ফ্যালার্ড তৎক্ষণাৎ জমা হিসেবে যোগ হবে!
+                      <strong>স্পষ্ট উইনিং স্ক্রিনশট আপলোড করুন।</strong> প্রতিপক্ষ পরাজয় নিশ্চিত করলে বা এডমিন যাচাই শেষে তাৎক্ষণিকভাবে আপনার ব্যালেন্সে পুরস্কার যোগ হবে। উভয় খেলোয়াড়ই জয়ের দাবি করলে ম্যাচটি এডমিন পর্যালোচনায় যাবে।
                     </span>
                   </div>
                 )}
