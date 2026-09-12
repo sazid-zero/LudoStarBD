@@ -12,8 +12,8 @@ export async function POST(request: Request) {
     const sender = (body.senderPhone || body.accountNumber || "").toString().trim();
 
     const depositAmount = Number(amount);
-    if (!depositAmount || depositAmount < 20) {
-      return NextResponse.json({ error: "সর্বনিম্ন ডিপোজিটের পরিমাণ ২০ টাকা।" }, { status: 400 });
+    if (!depositAmount || depositAmount < 10) {
+      return NextResponse.json({ error: "সর্বনিম্ন ডিপোজিটের পরিমাণ ১০ টাকা।" }, { status: 400 });
     }
 
     if (!mfsProvider || !["BKASH", "NAGAD", "ROCKET"].includes(mfsProvider)) {

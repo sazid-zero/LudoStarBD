@@ -44,8 +44,8 @@ export default function DepositModal({ isOpen, onClose, onSuccess }: DepositModa
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || Number(amount) < 20) {
-      showToast("সর্বনিম্ন ডিপোজিট ২০ টাকা", "error");
+    if (!amount || Number(amount) < 10) {
+      showToast("সর্বনিম্ন ডিপোজিট ১০ টাকা", "error");
       return;
     }
     if (!accountNumber || accountNumber.trim().length < 11) {
@@ -157,7 +157,7 @@ export default function DepositModal({ isOpen, onClose, onSuccess }: DepositModa
               ধাপ ৩: পরিমাণ লিখুন (৳)
             </label>
             <div className="flex gap-2 mb-2 flex-wrap">
-              {["50", "100", "200", "500", "1000"].map((val) => (
+              {["10", "50", "100", "200", "500", "1000"].map((val) => (
                 <button
                   key={val}
                   type="button"
@@ -177,7 +177,7 @@ export default function DepositModal({ isOpen, onClose, onSuccess }: DepositModa
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="পরিমাণ লিখুন (যেমন: 200)"
-              min="20"
+              min="10"
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-500/30 font-mono font-bold"
               required
             />
