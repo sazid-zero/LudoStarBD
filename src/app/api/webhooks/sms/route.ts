@@ -10,12 +10,18 @@ interface ParsedSms {
   senderPhone: string | null;
 }
 
-function parseSms(text: string): ParsedSms | null {
+function parseSms(text: string, sender: string = ""): ParsedSms | null {
   const clean = text.replace(/\s+/g, " ").trim();
+  const from = sender.trim().toLowerCase();
 
   // ── bKash ──
-  // Broad match: find amount (Tk/BDT) and TrxID anywhere in string
-  if (/bkash/i.test(clean)) {
+  // bKash format: "You have received Tk 2,030.00 from 01637021277. Fee Tk 0.00. Balance Tk 9,268.01. TrxID DIA7D6HR0T at ..."
+  const isBkash =
+    from.includes("bkash") ||
+    /bkash/i.test(clean) ||
+    (clean.includes("TrxID") && /(?:received\s+Tk|cash\s*in)/i.test(clean));
+
+  if (isBkash) {
     const amountM = clean.match(/(?:Tk|BDT)\s*([\d,]+(?:\.\d+)?)/i);
     const trxM = clean.match(/TrxID\s+([A-Z0-9]+)/i);
     const phoneM = clean.match(/(01\d{9})/);
@@ -33,8 +39,16 @@ function parseSms(text: string): ParsedSms | null {
   }
 
   // ── Nagad ──
-  if (/nagad|নগদ/i.test(clean)) {
-    const amountM = clean.match(/([\d,]+(?:\.\d+)?)\s*(?:BDT|Tk|টাকা)/i);
+  const isNagad =
+    from.includes("nagad") ||
+    from.includes("16167") ||
+    /nagad|নগদ/i.test(clean) ||
+    (clean.includes("Ref:") && /BDT|Tk|টাকা/i.test(clean));
+
+  if (isNagad) {
+    const amountM =
+      clean.match(/([\d,]+(?:\.\d+)?)\s*(?:BDT|Tk|টাকা)/i) ||
+      clean.match(/(?:Tk|BDT|টাকা)\s*([\d,]+(?:\.\d+)?)/i);
     const trxM = clean.match(/(?:TrxID|Ref|রেফ)\s*[:\s]+([A-Z0-9]+)/i);
     const phoneM = clean.match(/(01\d{9})/);
     if (amountM && trxM) {
@@ -51,8 +65,16 @@ function parseSms(text: string): ParsedSms | null {
   }
 
   // ── Rocket (DBBL) ──
-  if (/rocket|dbbl/i.test(clean)) {
-    const amountM = clean.match(/([\d,]+(?:\.\d+)?)\s*(?:BDT|Tk|টাকা)/i);
+  const isRocket =
+    from.includes("rocket") ||
+    from.includes("16216") ||
+    /rocket|dbbl/i.test(clean) ||
+    clean.includes("TxnID");
+
+  if (isRocket) {
+    const amountM =
+      clean.match(/([\d,]+(?:\.\d+)?)\s*(?:BDT|Tk|টাকা)/i) ||
+      clean.match(/(?:Tk|BDT|টাকা)\s*([\d,]+(?:\.\d+)?)/i);
     const trxM = clean.match(/(?:TxnID|TrxID|Ref)\s*[:\s]+([A-Z0-9]+)/i);
     const phoneM = clean.match(/(01\d{9})/);
     if (amountM && trxM) {
@@ -105,7 +127,8 @@ export async function POST(request: Request) {
     }
 
     // 3. Parse the SMS
-    const parsed = parseSms(smsText);
+    const sender = String(body?.from || body?.sender || body?.originatingAddress || "");
+    const parsed = parseSms(smsText, sender);
     if (!parsed) {
       return NextResponse.json({
         received: true,
