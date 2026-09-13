@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Wallet, MessageCircle, Bell, CheckCheck, X, Trophy, AlertTriangle, Info, Sparkles } from "lucide-react";
+import { ChevronLeft, Wallet, MessageCircle, Bell, CheckCheck, X, Trophy, AlertTriangle, Info, Sparkles, Coins } from "lucide-react";
 import LanguageToggle from "../common/LanguageToggle";
 
 interface AppBarProps {
