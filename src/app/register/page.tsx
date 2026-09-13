@@ -91,7 +91,7 @@ function RegisterForm() {
       <div className="mb-4 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3">
         <Gift className="w-5 h-5 text-[#00D06C] flex-shrink-0" />
         <span className="text-xs text-emerald-200 font-medium">
-          রেজিস্ট্রেশন করলেই পাচ্ছেন <strong className="text-[#00D06C] font-black">৳১০ ফ্রি সাইন-আপ বোনাস</strong>!
+          রেজিস্ট্রেশন করলেই পাচ্ছেন <strong className="text-[#00D06C] font-black">🪙১০ Coins ফ্রি সাইন-আপ বোনাস</strong>!
         </span>
       </div>
 

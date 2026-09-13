@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     // Check withdrawable balance (winBalance)
     if (user.winBalance < withdrawAmount) {
       return NextResponse.json(
-        { error: `আপনার উত্তোলনযোগ্য উইনিং ব্যালেন্স অপর্যাপ্ত। বর্তমান উইনিং ব্যালেন্স: ৳${user.winBalance}` },
+        { error: `আপনার উত্তোলনযোগ্য উইনিং ব্যালেন্স অপর্যাপ্ত। বর্তমান উইনিং ব্যালেন্স: ${user.winBalance} Coins` },
         { status: 400 }
       );
     }
@@ -82,8 +82,8 @@ export async function POST(request: Request) {
           accountType,
           accountNumber: accountNumber.trim(),
           note: isAgent
-            ? `${mfsProvider} (Agent - ২% চার্জ: ৳${fee}, গ্রাহক পাবেন: ৳${netPayable})`
-            : `${mfsProvider} (Personal - ১০৳ চার্জ, গ্রাহক পাবেন: ৳${netPayable})`,
+            ? `${mfsProvider} (Agent - ২% চার্জ: ৳${fee} Tk, গ্রাহক পাবেন: ৳${netPayable} Tk)`
+            : `${mfsProvider} (Personal - ১০৳ Tk চার্জ, গ্রাহক পাবেন: ৳${netPayable} Tk)`,
         },
       }),
     ]);
@@ -104,8 +104,8 @@ export async function POST(request: Request) {
     }
 
     const successMsg = isAgent
-      ? `৳${withdrawAmount} উইথড্র রিকোয়েস্ট সফল! ২% চার্জ (৳${fee}) কর্তনের পর আপনি পাবেন ৳${netPayable}। শীঘ্রই টাকা পাঠানো হবে।`
-      : `৳${withdrawAmount} উইথড্র রিকোয়েস্ট সফল! ১০ টাকা সার্ভিস চার্জ কর্তনের পর আপনি পাবেন ৳${netPayable}। শীঘ্রই আপনার ${mfsProvider} নম্বরে টাকা পাঠানো হবে।`;
+      ? `🪙${withdrawAmount} Coins উইথড্র রিকোয়েস্ট সফল! ২% চার্জ (৳${fee} Tk) কর্তনের পর আপনি পাবেন ৳${netPayable} Tk। শীঘ্রই টাকা পাঠানো হবে।`
+      : `🪙${withdrawAmount} Coins উইথড্র রিকোয়েস্ট সফল! ১০ টাকা সার্ভিস চার্জ কর্তনের পর আপনি পাবেন ৳${netPayable} Tk। শীঘ্রই আপনার ${mfsProvider} নম্বরে টাকা পাঠানো হবে।`;
 
     return NextResponse.json({
       success: true,

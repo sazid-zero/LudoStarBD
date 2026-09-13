@@ -94,7 +94,7 @@ export default function ProfilePage() {
               খেলার ব্যালেন্স
             </span>
             <span className="text-lg font-black text-white font-mono">
-              ৳ {(user?.mainBalance || 0).toLocaleString()}
+              🪙 {(user?.mainBalance || 0).toLocaleString()}
             </span>
           </div>
 
@@ -103,7 +103,7 @@ export default function ProfilePage() {
               উইনিং ব্যালেন্স
             </span>
             <span className="text-lg font-black text-emerald-400 font-mono">
-              ৳ {(user?.winBalance || 0).toLocaleString()}
+              🪙 {(user?.winBalance || 0).toLocaleString()}
             </span>
           </div>
         </div>

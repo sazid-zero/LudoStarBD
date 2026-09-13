@@ -46,7 +46,7 @@ export default function CreateMatchModal({
     }
 
     if (userBalance < currentFee) {
-      showToast(`আপনার ব্যালেন্স অপর্যাপ্ত (বর্তমান: ৳${userBalance})। ডিপোজিট করুন।`, "error");
+      showToast(`আপনার ব্যালেন্স অপর্যাপ্ত (বর্তমান: ${userBalance} Coins)। ডিপোজিট করুন।`, "error");
       return;
     }
 
@@ -131,10 +131,10 @@ export default function CreateMatchModal({
                     }`}
                   >
                     <span className="text-xs font-mono font-bold block text-amber-400">
-                      ৳{p.fee}
+                      🪙{p.fee}
                     </span>
                     <span className="text-[9px] text-emerald-400 block font-medium mt-0.5">
-                      উইন ৳{prize}
+                      জিতলে 🪙{prize}
                     </span>
                   </button>
                 );
@@ -145,7 +145,7 @@ export default function CreateMatchModal({
           {/* Custom Fee Input */}
           <div>
             <label className="text-xs font-semibold text-slate-400 block mb-1">
-              কাস্টম এন্ট্রি ফি (৳)
+              কাস্টম এন্ট্রি ফি (Coins)
             </label>
             <input
               type="number"
@@ -192,7 +192,7 @@ export default function CreateMatchModal({
               </div>
             </div>
             <div className="text-right text-[11px] text-slate-400">
-              <span className="block font-mono">মোট পট: ৳{totalPot}</span>
+              <span className="block font-mono">মোট পট: 🪙{totalPot}</span>
               <span className="text-[10px] text-amber-400 font-semibold">১০% কমিশন বাদ</span>
             </div>
           </div>
@@ -200,7 +200,7 @@ export default function CreateMatchModal({
           {userBalance < currentFee && (
             <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] text-red-300 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-              <span>আপনার ব্যালেন্স অপর্যাপ্ত। বর্তমান ব্যালেন্স: ৳{userBalance}</span>
+              <span>আপনার ব্যালেন্স অপর্যাপ্ত। বর্তমান ব্যালেন্স: 🪙{userBalance}</span>
             </div>
           )}
 

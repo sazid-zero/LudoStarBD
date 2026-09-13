@@ -67,7 +67,7 @@ export default function LeaderboardPage() {
                   {second.name}
                 </span>
                 <span className="text-[11px] font-mono font-bold text-emerald-400 block mt-0.5">
-                  ৳{second.totalEarnings.toLocaleString()}
+                  🪙{second.totalEarnings.toLocaleString()}
                 </span>
                 <span className="text-[10px] text-slate-400 block">
                   {second.matchesWon} জয়
@@ -91,7 +91,7 @@ export default function LeaderboardPage() {
                   {first.name}
                 </span>
                 <span className="text-xs font-mono font-extrabold text-amber-400 block mt-0.5">
-                  ৳{first.totalEarnings.toLocaleString()}
+                  🪙{first.totalEarnings.toLocaleString()}
                 </span>
                 <span className="text-[10px] text-slate-300 block font-medium">
                   {first.matchesWon} জয় • {first.winRate}% উইন
@@ -114,7 +114,7 @@ export default function LeaderboardPage() {
                   {third.name}
                 </span>
                 <span className="text-[11px] font-mono font-bold text-emerald-400 block mt-0.5">
-                  ৳{third.totalEarnings.toLocaleString()}
+                  🪙{third.totalEarnings.toLocaleString()}
                 </span>
                 <span className="text-[10px] text-slate-400 block">
                   {third.matchesWon} জয়
@@ -175,7 +175,7 @@ export default function LeaderboardPage() {
 
                 <div className="text-right flex-shrink-0">
                   <span className="font-mono font-bold text-emerald-400 block text-xs">
-                    ৳{entry.totalEarnings.toLocaleString()}
+                    🪙{entry.totalEarnings.toLocaleString()}
                   </span>
                   <span className="text-[10px] text-slate-400">
                     {entry.matchesWon} ম্যাচ জয়ী

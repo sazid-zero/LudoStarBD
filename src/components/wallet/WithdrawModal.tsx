@@ -40,7 +40,7 @@ export default function WithdrawModal({
     }
 
     if (withdrawVal > winBalance) {
-      showToast(`আপনার উইনিং ব্যালেন্স অপর্যাপ্ত (বর্তমান: ৳${winBalance})`, "error");
+      showToast(`আপনার উইনিং ব্যালেন্স অপর্যাপ্ত (বর্তমান: ${winBalance} Coins)`, "error");
       return;
     }
 
@@ -98,11 +98,11 @@ export default function WithdrawModal({
               উত্তোলনযোগ্য উইনিং ব্যালেন্স
             </span>
             <span className="text-xl font-bold font-mono text-emerald-400">
-              ৳ {winBalance.toLocaleString()}
+              🪙 {winBalance.toLocaleString()} Coins
             </span>
           </div>
           <span className="text-[11px] font-bold text-emerald-400 bg-emerald-900/50 px-2.5 py-1 rounded-full border border-emerald-700/50">
-            মিনিমাম ৳২০০
+            মিনিমাম ২০০ Coins
           </span>
         </div>
 
@@ -149,7 +149,7 @@ export default function WithdrawModal({
                       : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
                   }`}
                 >
-                  {t === "Personal" ? "পার্সোনাল (১০৳ চার্জ)" : "এজেন্ট (২% চার্জ)"}
+                  {t === "Personal" ? "পার্সোনাল (১০ Coin চার্জ)" : "এজেন্ট (২% চার্জ)"}
                 </button>
               ))}
             </div>
@@ -174,7 +174,7 @@ export default function WithdrawModal({
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-semibold text-slate-400">
-                উত্তোলনের পরিমাণ (৳)
+                উত্তোলনের পরিমাণ (Coins → Tk)
               </label>
               <span className="text-[10px] text-cyan-400 font-bold">
                 সর্বনিম্ন ২০০ টাকা
@@ -192,7 +192,7 @@ export default function WithdrawModal({
                       : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750"
                   }`}
                 >
-                  ৳{val}
+                  🪙{val}
                 </button>
               ))}
             </div>
@@ -211,17 +211,17 @@ export default function WithdrawModal({
           <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/90 space-y-1.5 text-xs">
             <div className="flex items-center justify-between text-slate-400">
               <span>উইথড্র পরিমাণ:</span>
-              <span className="font-bold text-white font-mono">৳{withdrawVal}</span>
+              <span className="font-bold text-white font-mono">🪙{withdrawVal}</span>
             </div>
             <div className="flex items-center justify-between text-slate-400">
               <span>{isAgent ? "এজেন্ট ক্যাশআউট চার্জ (২%):" : "পার্সোনাল সার্ভিস চার্জ:"}</span>
               <span className="font-bold font-mono text-amber-400">
-                - ৳{fee}
+                - ৳{fee} (Tk)
               </span>
             </div>
             <div className="pt-1.5 border-t border-slate-800 flex items-center justify-between font-bold">
               <span className="text-slate-200">আপনি একাউন্টে পাবেন:</span>
-              <span className="text-cyan-400 font-mono text-sm font-black">৳{netPayout}</span>
+              <span className="text-cyan-400 font-mono text-sm font-black">৳{netPayout} Tk</span>
             </div>
           </div>
 
@@ -231,7 +231,7 @@ export default function WithdrawModal({
             <div>
               <p className="font-bold text-amber-300">উইথড্র নীতিমালা ও চার্জ:</p>
               <p className="text-slate-300 mt-0.5">
-                • সর্বনিম্ন উইথড্র ব্যালেন্স <strong>৳২০০</strong>।
+                • সর্বনিম্ন উইথড্র ব্যালেন্স <strong>২০০ Coins</strong>।
                 <br />
                 • <strong>পার্সোনাল একাউন্ট:</strong> যেকোনো পরিমাণের জন্য ফিক্সড <strong>১০ টাকা</strong> সার্ভিস চার্জ প্রযোজ্য।
                 <br />
@@ -248,7 +248,7 @@ export default function WithdrawModal({
             disabled={loading || winBalance < 200 || withdrawVal < 200}
             className="w-full py-3 rounded-lg bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-400 hover:from-cyan-400 hover:to-blue-400 text-slate-950 font-black text-sm shadow-lg shadow-cyan-500/20 transition-all active:scale-98 disabled:opacity-50"
           >
-            {loading ? "প্রক্রিয়াকরণ হচ্ছে..." : `৳${withdrawVal} উইথড্র নিশ্চিত করুন (পাবেন ৳${netPayout})`}
+            {loading ? "প্রক্রিয়াকরণ হচ্ছে..." : `🪙${withdrawVal} Coins উইথড্র নিশ্চিত করুন (পাবেন ৳${netPayout} Tk)`}
           </button>
         </form>
       </div>

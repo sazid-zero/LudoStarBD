@@ -371,7 +371,7 @@ export default function MatchDetailPage({
                 প্রবেশ ফি
               </span>
               <span className="text-lg font-extrabold text-amber-400 font-mono">
-                ৳ {match.entryFee}
+                🪙 {match.entryFee}
               </span>
             </div>
             <div className="text-right">
@@ -379,7 +379,7 @@ export default function MatchDetailPage({
                 বিজয়ী পুরস্কার
               </span>
               <span className="text-lg font-extrabold text-emerald-400 font-mono">
-                ৳ {match.prize}
+                🪙 {match.prize}
               </span>
             </div>
           </div>

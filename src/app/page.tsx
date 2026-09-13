@@ -307,7 +307,7 @@ export default function LandingPage() {
               <span className="text-xs text-slate-400 font-medium">{t("hero.statPlayers")}</span>
             </div>
             <div>
-              <span className="block text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">৳ ২৫ লক্ষ+</span>
+              <span className="block text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">🪙 ২৫ লক্ষ+</span>
               <span className="text-xs text-slate-400 font-medium">{t("hero.statPrize")}</span>
             </div>
             <div>
@@ -543,7 +543,7 @@ export default function LandingPage() {
                 <div>
                   <h4 className="text-sm font-bold text-white">পছন্দের ম্যাচে জয়েন করুন</h4>
                   <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
-                    আপনার সুবিধাজনক এন্ট্রি ফি (যেমন: ৳৫০, ৳১০০, ৳২০০০) সিলেক্ট করে ম্যাচে অংশ নিন।
+                    আপনার সুবিধাজনক এন্ট্রি ফি (যেমন: 🪙৫০, 🪙১০০, 🪙২০০০ Coins) সিলেক্ট করে ম্যাচে অংশ নিন।
                   </p>
                 </div>
               </div>

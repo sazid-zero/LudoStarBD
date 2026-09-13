@@ -82,8 +82,8 @@ export default function JoinMatchModal({
       if (!hasEnoughBalance) {
         showToast(
           lang === "en"
-            ? `Insufficient balance! You need ৳${entryFee}, your total balance is ৳${totalBalance}`
-            : `অপর্যাপ্ত ব্যালেন্স! আপনার ব্যালেন্স ৳${totalBalance}, কিন্তু প্রয়োজন ৳${entryFee}। সরাসরি বিকাশ/নগদে পেমেন্ট করুন।`,
+            ? `Insufficient balance! You need 🪙${entryFee} Coins, your total balance is 🪙${totalBalance} Coins`
+            : `অপর্যাপ্ত ব্যালেন্স! আপনার ব্যালেন্স ${totalBalance} Coins, কিন্তু প্রয়োজন ${entryFee} Coins। সরাসরি বিকাশ/নগদে পেমেন্ট করুন।`,
           "error"
         );
         setPaymentMode("DIRECT");
@@ -162,11 +162,11 @@ export default function JoinMatchModal({
           <div className="flex items-center justify-between text-xs text-slate-200">
             <div>
               {lang === "en" ? "Entry:" : "এন্ট্রি:"}{" "}
-              <span className="font-extrabold text-amber-400">৳{match.entryFee}.00</span>
+              <span className="font-extrabold text-amber-400">🪙{match.entryFee} Coins</span>
             </div>
             <div>
               {lang === "en" ? "Prize:" : "পুরস্কার:"}{" "}
-              <span className="font-extrabold text-emerald-400">৳{match.prize}.00</span>
+              <span className="font-extrabold text-emerald-400">🪙{match.prize} Coins</span>
             </div>
           </div>
 
@@ -217,13 +217,13 @@ export default function JoinMatchModal({
                 <span className="text-[10px] text-slate-400 block">
                   {lang === "en" ? "Gaming Balance" : "গেমিং ব্যালেন্স"}
                 </span>
-                <span className="text-sm font-extrabold text-white">৳{mainBal}</span>
+                <span className="text-sm font-extrabold text-white">🪙{mainBal}</span>
               </div>
               <div className="bg-[#090e1c] border border-sky-500/20 rounded-xl p-2">
                 <span className="text-[10px] text-slate-400 block">
                   {lang === "en" ? "Winning Balance" : "জেতা ব্যালেন্স"}
                 </span>
-                <span className="text-sm font-extrabold text-emerald-400">৳{winBal}</span>
+                <span className="text-sm font-extrabold text-emerald-400">🪙{winBal}</span>
               </div>
             </div>
 

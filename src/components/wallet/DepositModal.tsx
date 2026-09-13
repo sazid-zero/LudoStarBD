@@ -154,7 +154,7 @@ export default function DepositModal({ isOpen, onClose, onSuccess }: DepositModa
           {/* Step 3 – Amount */}
           <div>
             <label className="text-xs font-bold text-slate-400 block mb-2">
-              ধাপ ৩: পরিমাণ লিখুন (৳)
+              ধাপ ৩: পরিমাণ লিখুন (Tk → Coins)
             </label>
             <div className="flex gap-2 mb-2 flex-wrap">
               {["10", "50", "100", "200", "500", "1000"].map((val) => (
@@ -168,7 +168,7 @@ export default function DepositModal({ isOpen, onClose, onSuccess }: DepositModa
                       : "bg-slate-800 text-slate-300 border-slate-700 hover:border-slate-600"
                   }`}
                 >
-                  ৳{val}
+                  🪙{val}
                 </button>
               ))}
             </div>

@@ -135,7 +135,7 @@ export default function MatchCard({
                 {lang === "en" ? "Total Prize" : "মোট পুরস্কার"}
               </span>
               <span className="text-base font-black text-[#0070F3] font-mono leading-none">
-                ৳{match.prize}
+                🪙{match.prize}
               </span>
             </div>
           </div>
@@ -150,7 +150,7 @@ export default function MatchCard({
                 {lang === "en" ? "Entry Fee" : "এন্ট্রি ফি"}
               </span>
               <span className="text-base font-black text-[#0070F3] font-mono leading-none">
-                ৳{match.entryFee}
+                🪙{match.entryFee}
               </span>
             </div>
           </div>

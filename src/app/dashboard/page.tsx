@@ -58,7 +58,7 @@ export default function DashboardPage() {
   const banners = [
     {
       title: lang === "en" ? "Mega Ludo Tournament" : "মেগা লুডো টুর্নামেন্ট",
-      subtitle: lang === "en" ? "৳10,000 Prize Pool • Daily at 9:00 PM" : "৳১০,০০০ প্রাইজপুল • প্রতিদিন রাত ৯টায়",
+      subtitle: lang === "en" ? "🪙10,000 Coins Prize Pool • Daily at 9:00 PM" : "🪙১০,০০০ Coins প্রাইজপুল • প্রতিদিন রাত ৯টায়",
       badge: lang === "en" ? "Special Event" : "স্পেশাল ইভেন্ট",
       image: "/uploads/proofs/banner1.png",
       bg: "from-blue-950/80 via-[#0a1532] to-[#050b1a]",

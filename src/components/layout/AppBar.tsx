@@ -151,15 +151,15 @@ export default function AppBar({
               <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
             </a>
 
-            {/* Wallet Balance Chip */}
+            {/* Wallet Balance Chip in Coins */}
             <Link
               href="/wallet"
-              className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white font-extrabold text-[11px] sm:text-xs font-mono shadow-sm hover:border-slate-600 active:scale-95 transition-all flex-shrink-0"
-              title="ওয়ালেট দেখুন"
+              className="flex items-center gap-1.5 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-900/90 border border-amber-500/30 text-white font-extrabold text-[11px] sm:text-xs font-mono shadow-sm hover:border-amber-400 active:scale-95 transition-all flex-shrink-0"
+              title="কয়েন ওয়ালেট দেখুন"
             >
-              <Wallet className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-300" />
-              <span className="text-[10px] font-bold text-slate-300">৳</span>
-              <span>{(userBalance !== undefined ? userBalance : 0).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+              <Coins className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-amber-300 font-bold">{(userBalance !== undefined ? userBalance : 0).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+              <span className="text-[9px] text-amber-400 font-sans font-extrabold uppercase tracking-wide">Coins</span>
               <span className="text-slate-400 text-xs font-normal">›</span>
             </Link>
           </div>

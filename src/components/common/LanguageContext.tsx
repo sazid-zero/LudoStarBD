@@ -46,8 +46,8 @@ const translations: Record<string, { bn: string; en: string }> = {
   "wallet.totalBalance": { bn: "মোট ব্যালেন্স", en: "Total Balance" },
   "wallet.depositTitle": { bn: "টাকা ডিপোজিট", en: "Deposit Money" },
   "wallet.withdrawTitle": { bn: "টাকা উইথড্র", en: "Withdraw Money" },
-  "wallet.minDeposit": { bn: "সর্বনিম্ন ডিপোজিট ২০ টাকা", en: "Minimum deposit ৳20" },
-  "wallet.minWithdraw": { bn: "সর্বনিম্ন উইথড্র ২০০ টাকা", en: "Minimum withdrawal ৳200" },
+  "wallet.minDeposit": { bn: "সর্বনিম্ন ডিপোজিট ২০ টাকা", en: "Minimum deposit ৳20 (= 20 Coins)" },
+  "wallet.minWithdraw": { bn: "সর্বনিম্ন উইথড্র ২০০ Coins", en: "Minimum withdrawal 200 Coins" },
 
   // Matches
   "match.liveMatches": { bn: "লাইভ ম্যাচ সমূহ", en: "Live Tournaments" },
@@ -69,7 +69,7 @@ const translations: Record<string, { bn: string; en: string }> = {
   "notice.warningTitle": { bn: "🚫 সতর্কতা:", en: "🚫 Warning:" },
   "notice.warning": {
     bn: "ম্যাচ চলাকালীন অপোনেন্টের সাথে খারাপ ব্যবহার বা গালাগালি করলে ১০০ টাকা জরিমানা ও অ্যাকাউন্ট ব্যান করা হবে!",
-    en: "Misbehavior or abusive language towards opponents during a match will result in a ৳100 fine & permanent account ban!"
+    en: "Misbehavior or abusive language towards opponents during a match will result in a 100 Coin fine & permanent account ban!"
   },
   "notice.rulesHeader": { bn: "📌 খেলার নিয়মাবলী:", en: "📌 Match Rules:" },
   "notice.limit": {
@@ -109,7 +109,7 @@ const translations: Record<string, { bn: string; en: string }> = {
   "ticker.label": { bn: "নোটিশ:", en: "Notice:" },
   "ticker.default": {
     bn: "ম্যাচ চলাকালীন অপোনেন্টের সাথে খারাপ ব্যবহার বা গালাগালি করলে ১০০ টাকা জরিমানা ও একাউন্ট ব্যান হবে...",
-    en: "Abusive language during matches will result in a ৳100 fine and account ban..."
+    en: "Abusive language during matches will result in a 100 Coin fine and account ban..."
   }
 };
 

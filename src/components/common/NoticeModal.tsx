@@ -87,7 +87,7 @@ export default function NoticeModal({
                 🏆 Ludo Best Club 🏆
               </p>
               <p className="text-rose-300 font-medium bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20">
-                🚫 Warning: Abusive behavior or harassment towards opponents during a match will result in a ৳100 fine & permanent account ban!
+                🚫 Warning: Abusive behavior or harassment towards opponents during a match will result in a 100 Coin fine & permanent account ban!
               </p>
               <p className="font-bold text-cyan-400">
                 📌 Match Rules:

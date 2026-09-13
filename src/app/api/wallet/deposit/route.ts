@@ -74,8 +74,8 @@ export async function POST(request: Request) {
         prisma.notification.create({
           data: {
             userId: user.id,
-            title: `✅ ডিপোজিট অনুমোদিত — ৳${depositAmount}`,
-            message: `আপনার ৳${depositAmount} ${mfsProvider} ডিপোজিট (TrxID: ${trxId.trim()}) স্বয়ংক্রিয়ভাবে অনুমোদিত হয়েছে এবং ব্যালেন্সে যোগ হয়েছে।`,
+            title: `✅ ডিপোজিট অনুমোদিত — 🪙${depositAmount} Coins`,
+            message: `আপনার ৳${depositAmount} ${mfsProvider} ডিপোজিট (TrxID: ${trxId.trim()}) স্বয়ংক্রিয়ভাবে অনুমোদিত হয়েছে এবং ${depositAmount} Coins আপনার ব্যালেন্সে যোগ হয়েছে।`,
             type: "DEPOSIT",
             link: "/wallet",
           },
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
     await prisma.notification.create({
       data: {
         userId: "ADMIN",
-        title: `💰 নতুন ডিপোজিট রিকোয়েস্ট — ৳${depositAmount}`,
+        title: `💰 নতুন ডিপোজিট রিকোয়েস্ট — ৳${depositAmount} Tk`,
         message: `${user.firstName} (${user.phone}) ৳${depositAmount} ${mfsProvider} ডিপোজিট দিয়েছেন। TrxID: ${trxId.trim()}। অনুগ্রহ করে যাচাই করুন।`,
         type: "DEPOSIT",
         link: "/admin",
@@ -118,7 +118,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `৳${depositAmount} ডিপোজিট রিকোয়েস্ট সফলভাবে জমা হয়েছে। এডমিন যাচাই করার পরে আপনার ব্যালেন্সে যোগ হবে।`,
+      message: `৳${depositAmount} ডিপোজিট রিকোয়েস্ট সফলভাবে জমা হয়েছে। এডমিন যাচাই করার পরে ${depositAmount} Coins আপনার ব্যালেন্সে যোগ হবে।`,
       transaction: { id: transaction.id, amount: transaction.amount, status: transaction.status },
     });
   } catch (error: any) {

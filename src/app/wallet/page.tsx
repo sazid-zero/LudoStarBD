@@ -66,7 +66,7 @@ export default function WalletPage() {
             মোট ব্যালেন্স
           </span>
           <div className="text-3xl sm:text-4xl font-black text-white font-mono mb-4 tracking-tight">
-            ৳ {totalBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+            🪙 {totalBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })} Coins
           </div>
 
           {/* Breakdown Boxes */}
@@ -76,7 +76,7 @@ export default function WalletPage() {
                 খেলার ব্যালেন্স
               </span>
               <span className="text-base font-extrabold text-cyan-400 font-mono">
-                ৳ {(user?.mainBalance || 0).toLocaleString()}
+                🪙 {(user?.mainBalance || 0).toLocaleString()}
               </span>
             </div>
 
@@ -85,7 +85,7 @@ export default function WalletPage() {
                 উত্তোলনযোগ্য ব্যালেন্স
               </span>
               <span className="text-base font-extrabold text-emerald-400 font-mono">
-                ৳ {(user?.winBalance || 0).toLocaleString()}
+                🪙 {(user?.winBalance || 0).toLocaleString()}
               </span>
             </div>
           </div>
@@ -213,7 +213,7 @@ export default function WalletPage() {
                           isCredit ? "text-emerald-400" : "text-rose-400"
                         }`}
                       >
-                        {isCredit ? "+" : "-"}৳{t.amount}
+                        {isCredit ? "+" : "-"}🪙{t.amount}
                       </span>
 
                       <span
