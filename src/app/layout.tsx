@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LudoStar BD - বাংলাদেশের সেরা লুডো প্ল্যাটফর্ম | Play • Compete • Win",
+  title: "LudoEarn - বাংলাদেশের সেরা লুডো প্ল্যাটফর্ম | Play • Compete • Win",
   description: "রিয়েল প্লেয়ারদের সাথে লুডো ম্যাচ খেলুন ও জিতে নিন আকর্ষণীয় পুরস্কার। দ্রুত ডিপোজিট ও ইনস্ট্যান্ট উইথড্র সুবিধা।",
-  keywords: ["LudoStar BD", "Ludo King Tournament", "Ludo Tournament Bangladesh", "Online Ludo Earn", "বিকাশ লুডো গেম"],
+  keywords: ["LudoEarn", "Ludo King Tournament", "Ludo Tournament Bangladesh", "Online Ludo Earn", "বিকাশ লুডো গেম"],
   icons: {
-    icon: "/newlogo.png",
-    shortcut: "/newlogo.png",
-    apple: "/newlogo.png",
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
   },
 };
 

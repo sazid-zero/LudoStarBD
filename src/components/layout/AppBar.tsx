@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Wallet, MessageCircle, Bell, CheckCheck, X, Trophy, AlertTriangle, Info, Sparkles, Coins } from "lucide-react";
+import { ChevronLeft, Wallet, MessageCircle, Bell, CheckCheck, X, Trophy, AlertTriangle, Info, Sparkles } from "lucide-react";
 import LanguageToggle from "../common/LanguageToggle";
 
 interface AppBarProps {
@@ -14,7 +14,7 @@ interface AppBarProps {
 }
 
 export default function AppBar({
-  title = "LudoStar BD",
+  title = "LudoEarn",
   showBack = false,
   userBalance,
 }: AppBarProps) {
@@ -79,29 +79,34 @@ export default function AppBar({
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-[#060d1e]/95 backdrop-blur-md border-b border-sky-500/20 shadow-[0_4px_20px_rgba(2,6,23,0.6)]">
-        <div className="flex items-center justify-between h-14 px-2.5 sm:px-3 max-w-md mx-auto gap-1">
-          {/* Left Side (Brand - strictly protected from shrinking/overlapping) */}
+      <header className="sticky top-0 z-40 w-full bg-[#0e0826]/95 backdrop-blur-md border-b border-purple-500/20 shadow-[0_4px_24px_rgba(10,5,30,0.8)]">
+        <div className="flex items-center justify-between h-14 px-2.5 sm:px-3 max-w-md mx-auto gap-2">
+          {/* Left Side */}
           <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             {showBack ? (
-              <button
-                onClick={() => router.back()}
-                className="p-1.5 -ml-1 text-slate-400 hover:text-white rounded-full hover:bg-slate-800 active:scale-95 transition-all"
-                aria-label="Back"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => router.back()}
+                  className="w-8 h-8 rounded-full bg-[#1b1242] border border-purple-500/30 text-slate-300 hover:text-white flex items-center justify-center active:scale-95 transition-all shadow-sm"
+                  aria-label="Back"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <h1 className="text-sm sm:text-base font-black text-white tracking-tight truncate max-w-[150px] sm:max-w-[200px]">
+                  {title}
+                </h1>
+              </div>
             ) : (
-              <Link href="/dashboard" className="flex items-center gap-1.5 sm:gap-2 select-none">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden bg-black/40 border border-sky-400/40 shadow-[0_0_12px_rgba(0,173,181,0.3)] flex items-center justify-center p-0.5 flex-shrink-0">
-                  <Image src="/newlogo.png" alt="LudoStar BD" width={38} height={38} className="object-contain w-full h-full rounded-lg" />
+              <Link href="/dashboard" className="flex items-center gap-2 select-none">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden bg-[#160f38] border border-purple-500/40 shadow-[0_0_14px_rgba(139,92,246,0.3)] flex items-center justify-center p-0.5 flex-shrink-0">
+                  <Image src="/logo.png" alt="LudoEarn" width={38} height={38} className="object-contain w-full h-full rounded-lg" />
                 </div>
                 <div className="flex flex-col leading-none">
                   <span className="text-sm sm:text-base font-black tracking-tight leading-none whitespace-nowrap">
-                    <span className="text-white">LudoStar</span>
-                    <span className="text-amber-400"> BD</span>
+                    <span className="text-white">LUDO</span>{" "}
+                    <span className="text-purple-400">STAR</span>
                   </span>
-                  <span className="text-[8px] sm:text-[9px] text-slate-400 tracking-wider font-semibold mt-0.5 hidden xs:block whitespace-nowrap">
+                  <span className="text-[8px] sm:text-[9px] text-purple-300/70 tracking-wider font-semibold mt-0.5 hidden xs:block whitespace-nowrap">
                     Play • Compete • Win
                   </span>
                 </div>
@@ -109,8 +114,8 @@ export default function AppBar({
             )}
           </div>
 
-          {/* Right Side (Actions - neatly spaced and protected) */}
-          <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0 ml-auto">
+          {/* Right Side Actions */}
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-auto">
             {/* Language Switcher */}
             <LanguageToggle />
 
@@ -120,10 +125,10 @@ export default function AppBar({
                 setShowNotifications(true);
                 fetchNotifications();
               }}
-              className="relative w-7 h-7 sm:w-8 sm:h-8 text-white/90 bg-slate-800/80 border border-slate-700/80 rounded-full hover:bg-slate-700 active:scale-95 transition-all flex items-center justify-center flex-shrink-0"
+              className="relative w-8 h-8 text-amber-300 bg-[#1b1242] border border-purple-500/30 rounded-full hover:bg-purple-900/40 active:scale-95 transition-all flex items-center justify-center flex-shrink-0 shadow-sm"
               title="নোটিফিকেশন"
             >
-              <Bell className="w-3.5 h-3.5 text-cyan-300" />
+              <Bell className="w-4 h-4 fill-amber-400/80 text-amber-300" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center animate-bounce shadow-md">
                   {unreadCount > 9 ? "9+" : unreadCount}
@@ -131,36 +136,15 @@ export default function AppBar({
               )}
             </button>
 
-            {/* Quick Browser Play Button (hidden on narrow screens to ensure zero crowd) */}
-            <Link
-              href="/play"
-              className="w-7 h-7 sm:w-8 sm:h-8 text-white/90 bg-slate-800/80 border border-slate-700/80 rounded-full hover:bg-slate-700 active:scale-95 transition-all hidden xs:flex items-center justify-center text-xs shadow-sm flex-shrink-0"
-              title="Play in Browser"
-            >
-              🎲
-            </Link>
-
-            {/* WhatsApp Support */}
-            <a
-              href={`https://wa.me/88${whatsappNumber}?text=Hello%20LudoStarBD%20Support`}
-              target="_blank"
-              rel="noreferrer"
-              className="w-7 h-7 sm:w-8 sm:h-8 text-white/90 bg-slate-800/80 border border-slate-700/80 rounded-full hover:bg-slate-700 active:scale-95 transition-all flex items-center justify-center flex-shrink-0"
-              title="WhatsApp সাপোর্ট"
-            >
-              <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-            </a>
-
-            {/* Wallet Balance Chip in Coins */}
+            {/* Reference-Styled Wallet Balance Pill */}
             <Link
               href="/wallet"
-              className="flex items-center gap-1.5 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-900/90 border border-amber-500/30 text-white font-extrabold text-[11px] sm:text-xs font-mono shadow-sm hover:border-amber-400 active:scale-95 transition-all flex-shrink-0"
-              title="কয়েন ওয়ালেট দেখুন"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1b1242] border border-purple-500/40 text-amber-300 font-black text-xs sm:text-sm font-mono shadow-[0_0_14px_rgba(139,92,246,0.2)] hover:border-purple-400 active:scale-95 transition-all flex-shrink-0"
+              title="ওয়ালেট দেখুন"
             >
-              <Coins className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-amber-300 font-bold">{(userBalance !== undefined ? userBalance : 0).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-              <span className="text-[9px] text-amber-400 font-sans font-extrabold uppercase tracking-wide">Coins</span>
-              <span className="text-slate-400 text-xs font-normal">›</span>
+              <Wallet className="w-3.5 h-3.5 text-purple-400" />
+              <span className="text-xs font-bold text-purple-300">৳</span>
+              <span>{(userBalance !== undefined ? userBalance : 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </Link>
           </div>
         </div>

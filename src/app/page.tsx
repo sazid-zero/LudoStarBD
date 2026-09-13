@@ -146,7 +146,7 @@ export default function LandingPage() {
 
   const faqs = [
     {
-      q: lang === "en" ? "How do I play Ludo on LudoStar BD?" : "কীভাবে LudoStar BD-তে লুডো খেলবো?",
+      q: lang === "en" ? "How do I play Ludo on LudoEarn?" : "কীভাবে LudoEarn-এ লুডো খেলবো?",
       a:
         lang === "en"
           ? "First create a free account. Deposit funds to your wallet, then join a match with your desired entry fee. Copy the room code from your match lobby, open Ludo King, select 'Play with Friends', paste the room code, and play!"
@@ -156,8 +156,8 @@ export default function LandingPage() {
       q: lang === "en" ? "How do I receive my prize money after winning?" : "ম্যাচ শেষে জয়ের টাকা কীভাবে পাবো?",
       a:
         lang === "en"
-          ? "Take a full-screen screenshot of the victory screen right after the match finishes. Return to LudoStar BD's match room, choose 'I Won', and upload your screenshot. Upon instant verification, prize funds are credited to your Winning Balance for immediate cashout."
-          : "ম্যাচ জয়ের পর শেষ মুহূর্তের ফুল স্ক্রিনশট তুলুন। LudoStar BD-তে ম্যাচ রুমে এসে 'আমি জিতেছি' অপশনে স্ক্রিনশট আপলোড করুন। ভেরিফিকেশনের সাথে সাথেই টাকা আপনার উইনিং ব্যালেন্সে যোগ হবে এবং আপনি সরাসরি বিকাশ/নগদে ক্যাশআউট করতে পারবেন।",
+          ? "Take a full-screen screenshot of the victory screen right after the match finishes. Return to LudoEarn's match room, choose 'I Won', and upload your screenshot. Upon instant verification, prize funds are credited to your Winning Balance for immediate cashout."
+          : "ম্যাচ জয়ের পর শেষ মুহূর্তের ফুল স্ক্রিনশট তুলুন। LudoEarn-এ ম্যাচ রুমে এসে 'আমি জিতেছি' অপশনে স্ক্রিনশট আপলোড করুন। ভেরিফিকেশনের সাথে সাথেই টাকা আপনার উইনিং ব্যালেন্সে যোগ হবে এবং আপনি সরাসরি বিকাশ/নগদে ক্যাশআউট করতে পারবেন।",
     },
     {
       q: lang === "en" ? "How long does withdrawal take?" : "উইথড্র করতে কত সময় লাগে?",
@@ -185,10 +185,10 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-xl bg-black/40 border border-amber-400/40 p-0.5 flex items-center justify-center overflow-hidden shadow-md shadow-amber-500/10">
-              <Image src="/newlogo.png" alt="LudoStar BD" width={40} height={40} className="object-contain w-full h-full" priority />
+              <Image src="/logo.png" alt="LudoEarn" width={40} height={40} className="object-contain w-full h-full" priority />
             </div>
             <span className="text-xl font-black tracking-tight text-white">
-              LudoStar <span className="text-amber-400">BD</span>
+              Ludo<span className="text-amber-400">Earn</span>
             </span>
           </Link>
 
@@ -307,7 +307,7 @@ export default function LandingPage() {
               <span className="text-xs text-slate-400 font-medium">{t("hero.statPlayers")}</span>
             </div>
             <div>
-              <span className="block text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">🪙 ২৫ লক্ষ+</span>
+              <span className="block text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">৳ ২৫ লক্ষ+</span>
               <span className="text-xs text-slate-400 font-medium">{t("hero.statPrize")}</span>
             </div>
             <div>
@@ -403,7 +403,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center max-w-xl mx-auto mb-12">
             <span className="text-xs font-black text-[#00D2D3] uppercase tracking-widest block mb-2">
-              {lang === "en" ? "Why LudoStar BD?" : "কেন LudoStar BD সেরা?"}
+              {lang === "en" ? "Why LudoEarn?" : "কেন LudoEarn সেরা?"}
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-white">
               {lang === "en" ? "Exclusive Features & Elite Gaming" : "অনন্য ফিচার ও চমৎকার গেমিং অভিজ্ঞতা"}
@@ -496,7 +496,7 @@ export default function LandingPage() {
               {lang === "en" ? "Watch Video Guide" : "ভিডিও গাইড"}
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-white">
-              {lang === "en" ? "How to Play & Win Cash on LudoStar BD" : "কীভাবে খেলবেন এবং জিতে নেবেন ক্যাশ টাকা"}
+              {lang === "en" ? "How to Play & Win Cash on LudoEarn" : "কীভাবে খেলবেন এবং জিতে নেবেন ক্যাশ টাকা"}
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 mt-2">
               {lang === "en"
@@ -512,7 +512,7 @@ export default function LandingPage() {
                 <iframe
                   className="w-full h-full"
                   src={getYoutubeEmbedUrl(homeVideoUrl)}
-                  title="How to play LudoStar BD - Official Tutorial"
+                  title="How to play LudoEarn - Official Tutorial"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />
@@ -543,7 +543,7 @@ export default function LandingPage() {
                 <div>
                   <h4 className="text-sm font-bold text-white">পছন্দের ম্যাচে জয়েন করুন</h4>
                   <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
-                    আপনার সুবিধাজনক এন্ট্রি ফি (যেমন: 🪙৫০, 🪙১০০, 🪙২০০০ Coins) সিলেক্ট করে ম্যাচে অংশ নিন।
+                    আপনার সুবিধাজনক এন্ট্রি ফি (যেমন: ৳৫০, ৳১০০, ৳২০০০) সিলেক্ট করে ম্যাচে অংশ নিন।
                   </p>
                 </div>
               </div>
@@ -688,9 +688,9 @@ export default function LandingPage() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-lg bg-black/40 border border-amber-400/40 p-0.5 flex items-center justify-center overflow-hidden shadow-md shadow-amber-500/10">
-                <Image src="/newlogo.png" alt="LudoStar BD" width={32} height={32} className="object-contain w-full h-full" />
+                <Image src="/logo.png" alt="LudoEarn" width={32} height={32} className="object-contain w-full h-full" />
               </div>
-              <span className="font-extrabold text-sm text-white">LudoStar <span className="text-amber-400">BD</span></span>
+              <span className="font-extrabold text-sm text-white">Ludo<span className="text-amber-400">Earn</span></span>
             </div>
             <p className="text-slate-400 leading-relaxed mb-3">
               {lang === "en"
@@ -754,7 +754,7 @@ export default function LandingPage() {
               </a>
             </div>
             <p className="text-[11px] text-slate-400">
-              © {new Date().getFullYear()} LudoStar BD. All rights reserved.
+              © {new Date().getFullYear()} LudoEarn. All rights reserved.
             </p>
           </div>
         </div>

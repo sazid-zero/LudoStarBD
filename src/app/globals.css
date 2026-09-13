@@ -13,30 +13,32 @@
    ========================================================================== */
 
 :root {
-  /* Core Brand Primary (Vibrant Blue/Cyan from Color Hunt) */
-  --primary: #0070F3;
-  --primary-hover: #0060DF;
-  --primary-light: #EBF5FF;
+  /* Core Brand Primary (Vibrant Violet / Purple from Reference) */
+  --primary: #8B5CF6;
+  --primary-hover: #7C3AED;
+  --primary-light: #2E1065;
 
-  /* Surfaces: Deep Midnight Base with Crisp White Elevated Cards */
-  --bg: #0B132B;
-  --bg-app: #0B132B;
-  --bg-card: #FFFFFF;
-  --surface: #1C2541;
-  --surface-2: #3A506B;
+  /* Surfaces: Midnight Purple / Deep Violet */
+  --bg: #0E0826;
+  --bg-app: #0E0826;
+  --bg-card: #171038;
+  --surface: #171038;
+  --surface-2: #241A52;
+  --surface-3: #32256B;
 
   /* Typography Colors */
-  --text-main: #0F172A;
-  --text-muted: #64748B;
-  --text-subtle: #94A3B8;
-  --text-light: #F8FAFC;
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-subtle: #64748B;
+  --text-light: #FFFFFF;
 
-  /* Color Hunt Accents */
-  --accent-cyan: #00D2D3;
-  --accent-emerald: #00D06C;
-  --accent-gold: #FFB703;
-  --accent-ruby: #FF3838;
-  --accent-purple: #7C3AED;
+  /* Reference Gaming Accents */
+  --accent-purple: #8B5CF6;
+  --accent-purple-glow: rgba(139, 92, 246, 0.4);
+  --accent-gold: #F59E0B;
+  --accent-cyan: #06B6D4;
+  --accent-emerald: #10B981;
+  --accent-ruby: #EF4444;
 
   /* Fonts */
   --font: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Bengali", "Hind Siliguri", sans-serif;
@@ -71,37 +73,37 @@ html {
 
 body {
   min-height: 100dvh;
-  background-color: #0B132B;
+  background-color: #0e0826;
   color: #F8FAFC;
   line-height: 1.5;
   overflow-x: hidden;
 }
 
-/* 4-Color Signature Futuristic Rail (Color Hunt Gradient) */
+/* 4-Color Signature Futuristic Rail (Violet / Cyan / Emerald / Gold) */
 .token-rail {
   height: var(--rail-h);
   background: linear-gradient(
     90deg,
-    #0070F3 0%,
-    #0070F3 25%,
-    #00D06C 25%,
-    #00D06C 50%,
-    #FFB703 50%,
-    #FFB703 75%,
-    #FF3838 75%,
-    #FF3838 100%
+    #8B5CF6 0%,
+    #8B5CF6 25%,
+    #06B6D4 25%,
+    #06B6D4 50%,
+    #10B981 50%,
+    #10B981 75%,
+    #F59E0B 75%,
+    #F59E0B 100%
   );
   width: 100%;
 }
 
-/* App Bar Matching Screenshot: Deep Midnight Black/Navy Header */
+/* App Bar Matching Screenshot: Deep Midnight Purple Header */
 .app-header {
   position: sticky;
   top: 0;
   z-index: 50;
   height: var(--appbar-h);
-  background: #0B132B;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0e0826;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.18);
 }
 
 /* Bottom Navigation Bar */
@@ -112,10 +114,10 @@ body {
   right: 0;
   z-index: 50;
   height: var(--nav-h);
-  background: rgba(20, 23, 29, 0.95);
+  background: rgba(14, 8, 38, 0.95);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border-top: 1px solid rgba(255, 211, 105, 0.18);
+  border-top: 1px solid rgba(139, 92, 246, 0.2);
 }
 
 /* Wallet Chip - Electric Cyan/Ice Gradient */
@@ -171,8 +173,8 @@ body {
   align-items: center;
   overflow: hidden;
   white-space: nowrap;
-  background: #060d1e;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+  background: #0e0826;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
   height: 38px;
   position: relative;
 }
@@ -205,11 +207,11 @@ body {
   background: var(--bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--line);
+  background: #241A52;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--surface-3);
+  background: #32256B;
 }
 
 /* Floating App Container Frame for Desktop */
@@ -220,29 +222,36 @@ body {
   min-height: 100dvh;
   position: relative;
   background: var(--bg);
-  box-shadow: 0 0 60px rgba(255, 211, 105, 0.12);
+  box-shadow: 0 0 60px rgba(139, 92, 246, 0.15);
   display: flex;
   flex-direction: column;
 }
 
 /* Realistic Theme Card Glows */
-.card-glow-gold {
-  background: radial-gradient(100% 120% at 50% 0%, rgba(255, 211, 105, 0.15) 0%, transparent 70%), #222831;
-  border: 1px solid rgba(255, 211, 105, 0.28);
+.card-glow-purple {
+  background: radial-gradient(100% 120% at 50% 0%, rgba(139, 92, 246, 0.15) 0%, transparent 70%), #171038;
+  border: 1px solid rgba(139, 92, 246, 0.3);
   backdrop-filter: blur(16px);
-  box-shadow: 0 8px 30px rgba(10, 12, 16, 0.8), 0 0 20px rgba(255, 211, 105, 0.08);
+  box-shadow: 0 8px 30px rgba(10, 6, 26, 0.8), 0 0 20px rgba(139, 92, 246, 0.12);
+}
+
+.card-glow-gold {
+  background: radial-gradient(100% 120% at 50% 0%, rgba(245, 158, 11, 0.15) 0%, transparent 70%), #171038;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 30px rgba(10, 6, 26, 0.8), 0 0 20px rgba(245, 158, 11, 0.1);
 }
 
 .card-glow-cyan {
-  background: radial-gradient(100% 120% at 0% 0%, rgba(0, 173, 181, 0.15) 0%, transparent 65%), #222831;
-  border: 1px solid rgba(0, 173, 181, 0.3);
+  background: radial-gradient(100% 120% at 0% 0%, rgba(6, 182, 212, 0.15) 0%, transparent 65%), #171038;
+  border: 1px solid rgba(6, 182, 212, 0.3);
   backdrop-filter: blur(16px);
-  box-shadow: 0 8px 30px rgba(10, 12, 16, 0.8), 0 0 22px rgba(0, 173, 181, 0.12);
+  box-shadow: 0 8px 30px rgba(10, 6, 26, 0.8), 0 0 22px rgba(6, 182, 212, 0.12);
 }
 
 .card-glow-emerald {
-  background: radial-gradient(100% 120% at 100% 0%, rgba(16, 185, 129, 0.15) 0%, transparent 65%), #222831;
+  background: radial-gradient(100% 120% at 100% 0%, rgba(16, 185, 129, 0.15) 0%, transparent 65%), #171038;
   border: 1px solid rgba(16, 185, 129, 0.3);
   backdrop-filter: blur(16px);
-  box-shadow: 0 8px 30px rgba(10, 12, 16, 0.8), 0 0 22px rgba(16, 185, 129, 0.12);
+  box-shadow: 0 8px 30px rgba(10, 6, 26, 0.8), 0 0 22px rgba(16, 185, 129, 0.12);
 }

@@ -19,7 +19,7 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#0e0826]/95 backdrop-blur-md border-t border-purple-500/20 shadow-[0_-4px_20px_rgba(10,5,30,0.8)] safe-area-bottom">
       <div className="flex items-center justify-around h-16 max-w-md mx-auto px-1">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -30,14 +30,18 @@ export default function BottomNav() {
               key={item.href}
               href={item.href}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-1 relative transition-colors ${
-                isActive ? "text-[#0070F3]" : "text-slate-600 hover:text-slate-900"
+                isActive ? "text-purple-400" : "text-slate-400 hover:text-slate-200"
               }`}
             >
               {isActive && (
-                <span className="absolute top-0 w-8 h-0.5 rounded-full bg-[#0070F3]" />
+                <span className="absolute top-0 w-8 h-0.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-400 shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
               )}
-              <Icon className={`w-5 h-5 transition-transform ${isActive ? "scale-110" : ""}`} />
-              <span className="text-[11px] font-bold tracking-tight">{item.label}</span>
+              <div className={`transition-all duration-200 ${isActive ? "scale-110 -translate-y-0.5" : ""}`}>
+                <Icon className={`w-5 h-5 ${isActive ? "text-purple-400 drop-shadow-[0_0_6px_rgba(168,85,247,0.5)]" : "text-slate-400"}`} />
+              </div>
+              <span className={`text-[11px] font-bold tracking-tight ${isActive ? "text-purple-300 font-extrabold" : "text-slate-400"}`}>
+                {item.label}
+              </span>
             </Link>
           );
         })}

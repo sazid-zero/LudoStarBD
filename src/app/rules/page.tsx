@@ -12,7 +12,7 @@ export default function RulesPage() {
         <div className="p-4 rounded-2xl bg-gradient-to-br from-[#0B152B] via-[#101E3D] to-[#070D1E] border border-cyan-500/25 shadow-lg shadow-cyan-950/20">
           <div className="flex items-center gap-2 mb-2">
             <BookOpen className="w-5 h-5 text-cyan-400" />
-            <h2 className="text-sm font-bold text-white">LudoStar BD অফিসিয়াল নিয়মাবলী</h2>
+            <h2 className="text-sm font-bold text-white">LudoEarn অফিসিয়াল নিয়মাবলী</h2>
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
             ম্যাচ খেলার পূর্বে সকল নিয়ম সতর্কতার সাথে পড়ুন। নিয়ম মেনে খেললে যেকোনো বিরোধে সাপোর্ট থেকে সর্বোচ্চ সহায়তা পাবেন।
@@ -55,7 +55,7 @@ export default function RulesPage() {
           <ul className="list-disc list-inside space-y-1.5 pl-1 leading-relaxed">
             <li>হেরে গিয়ে মিথ্যা "আমি জিতেছি" দাবি করলে বা অন্যের পুরোনো স্ক্রিনশট দিলে <strong>একাউন্ট স্থায়ীভাবে ব্যান</strong> করা হবে এবং সম্পূর্ণ ব্যালেন্স বাজেয়াপ্ত হবে।</li>
             <li>ইচ্ছাকৃতভাবে গেম ছেড়ে দিলে বা ডিসকানেক্ট হলে প্রতিপক্ষকে বিজয়ী ঘোষণা করা হবে।</li>
-            <li>যেকোনো বিরোধ নিষ্পত্তিতে LudoStar BD অ্যাডমিন টিমের সিদ্ধান্তই চূড়ান্ত বলে গণ্য হবে।</li>
+            <li>যেকোনো বিরোধ নিষ্পত্তিতে LudoEarn অ্যাডমিন টিমের সিদ্ধান্তই চূড়ান্ত বলে গণ্য হবে।</li>
           </ul>
         </div>
 

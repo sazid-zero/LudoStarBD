@@ -47,11 +47,11 @@ Import PipraPay's `database.sql` into this MySQL database via phpMyAdmin or MySQ
 
 ---
 
-### Step 4: Connect with LudoStar BD
+### Step 4: Connect with LudoEarn
 Once your Render web service is live (e.g. `https://my-piprapay.onrender.com`):
 1. Log into your PipraPay dashboard at `https://my-piprapay.onrender.com`.
 2. Generate your API key.
-3. Open `LudoStarBD-main/.env` and update:
+3. Open `LudoEarn/.env` and update:
    ```env
    PIPRAPAY_API_KEY="your_piprapay_live_key"
    PIPRAPAY_BASE_URL="https://my-piprapay.onrender.com/api"

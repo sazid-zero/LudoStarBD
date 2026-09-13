@@ -101,8 +101,8 @@ export default function MatchCard({
         <div className="flex items-start gap-3 mb-3 relative z-10">
           <div className="w-12 h-12 rounded-2xl bg-black border border-slate-800 p-0.5 flex-shrink-0 shadow-sm flex items-center justify-center overflow-hidden">
             <Image
-              src="/newlogo.png"
-              alt="LudoStar BD"
+              src="/logo.png"
+              alt="LudoEarn"
               width={44}
               height={44}
               className="object-contain w-full h-full rounded-xl"
@@ -123,41 +123,41 @@ export default function MatchCard({
           </div>
         </div>
 
-        {/* 4 Info Boxes Grid matching screenshot (Clean rounded tiles with icons) */}
+        {/* 4 Info Boxes Grid matching screenshot 2 */}
         <div className="grid grid-cols-2 gap-2.5 my-3 relative z-10">
           {/* Box 1: Total Prize */}
           <div className="p-3 rounded-2xl bg-slate-50/90 border border-slate-100 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-slate-200/80 text-slate-700 flex items-center justify-center flex-shrink-0 text-sm">
+            <div className="w-8 h-8 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center flex-shrink-0 text-sm font-bold">
               💰
             </div>
             <div>
               <span className="text-[10px] font-semibold text-slate-500 block leading-tight">
                 {lang === "en" ? "Total Prize" : "মোট পুরস্কার"}
               </span>
-              <span className="text-base font-black text-[#0070F3] font-mono leading-none">
-                🪙{match.prize}
+              <span className="text-base font-black text-emerald-600 font-mono leading-none">
+                ৳{match.prize.toLocaleString()}
               </span>
             </div>
           </div>
 
           {/* Box 2: Entry Fee */}
           <div className="p-3 rounded-2xl bg-slate-50/90 border border-slate-100 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-slate-200/80 text-slate-700 flex items-center justify-center flex-shrink-0 text-sm">
+            <div className="w-8 h-8 rounded-full bg-purple-500/15 text-purple-600 flex items-center justify-center flex-shrink-0 text-sm font-bold">
               👥
             </div>
             <div>
               <span className="text-[10px] font-semibold text-slate-500 block leading-tight">
                 {lang === "en" ? "Entry Fee" : "এন্ট্রি ফি"}
               </span>
-              <span className="text-base font-black text-[#0070F3] font-mono leading-none">
-                🪙{match.entryFee}
+              <span className="text-base font-black text-slate-900 font-mono leading-none">
+                ৳{match.entryFee.toLocaleString()}
               </span>
             </div>
           </div>
 
           {/* Box 3: Version */}
           <div className="p-3 rounded-2xl bg-slate-50/90 border border-slate-100 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-slate-200/80 text-slate-700 flex items-center justify-center flex-shrink-0 text-sm">
+            <div className="w-8 h-8 rounded-full bg-cyan-500/15 text-cyan-600 flex items-center justify-center flex-shrink-0 text-sm">
               ⚡
             </div>
             <div>
@@ -165,14 +165,14 @@ export default function MatchCard({
                 {lang === "en" ? "Version" : "ভার্সন"}
               </span>
               <span className="text-xs font-black text-slate-800 leading-none">
-                {lang === "en" ? "Mobile" : "মোবাইল"}
+                Mobile / Web
               </span>
             </div>
           </div>
 
           {/* Box 4: Board Type */}
           <div className="p-3 rounded-2xl bg-slate-50/90 border border-slate-100 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-slate-200/80 text-slate-700 flex items-center justify-center flex-shrink-0 text-sm">
+            <div className="w-8 h-8 rounded-full bg-amber-500/15 text-amber-600 flex items-center justify-center flex-shrink-0 text-sm">
               🎲
             </div>
             <div>
@@ -180,79 +180,70 @@ export default function MatchCard({
                 {lang === "en" ? "Board Type" : "বোর্ড টাইপ"}
               </span>
               <span className="text-xs font-black text-slate-800 leading-none">
-                {lang === "en" ? "Ludo Free" : "লুডো ফ্রি"}
+                1 vs 1 Battle
               </span>
             </div>
           </div>
         </div>
 
         {/* Seat Progress & Status Bar (Sky Blue Progress Bar & Action Button) */}
+        {/* Seat Progress & Status Bar matching screenshot 2 */}
         <div className="my-3 flex items-center justify-between gap-3 relative z-10">
-          {/* Progress Bar & Ratio */}
-          <div className="flex-1 flex items-center gap-2.5 min-w-0">
-            <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden relative">
-              <div
-                className="h-full rounded-full bg-[#0091FF] transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-            <span className="text-xs font-black text-slate-700 font-mono flex-shrink-0">
-              {joinedCount}/2
-            </span>
+          <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden relative">
+            <div
+              className="h-full rounded-full bg-[#06B6D4] transition-all duration-500"
+              style={{ width: `${progressPercent}%` }}
+            />
           </div>
+          <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md font-mono flex-shrink-0 tracking-wider">
+            {joinedCount}/2 JOINED ({joinedCount}/2)
+          </span>
+        </div>
 
-          {/* Right Status / Action Button matching screenshot */}
-          <div className="flex-shrink-0">
-            {closedStatus ? (
-              <span className="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-black text-xs text-center block min-w-[120px]">
-                {match.status === "COMPLETED" ? (lang === "en" ? "Completed" : "সম্পন্ন") :
-                 match.status === "CANCELLED" ? (lang === "en" ? "Cancelled" : "বাতিল") :
-                 (lang === "en" ? "Dispute" : "বিরোধাধীন")}
-              </span>
-            ) : bothFull ? (
-              isParticipant ? (
-                <Link
-                  href={`/matches/${match.id}`}
-                  className="px-4 py-2 rounded-xl bg-[#0070F3] hover:bg-blue-600 text-white font-black text-xs shadow-sm active:scale-95 transition-all text-center flex items-center justify-center gap-1 min-w-[125px]"
-                >
-                  <span>{match.roomCode ? (lang === "en" ? "🔑 Room Ready" : "🔑 রুম রেডি") : (lang === "en" ? "⏳ Waiting..." : "⏳ অপেক্ষা...")}</span>
-                  <span>›</span>
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  disabled
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-400 font-black text-xs cursor-default min-w-[120px] text-center"
-                >
-                  {lang === "en" ? "Seat Fillup" : "সিট পূর্ণ"}
-                </button>
-              )
-            ) : joinedCount === 1 ? (
-              isParticipant ? (
-                <Link
-                  href={`/matches/${match.id}`}
-                  className="px-4 py-2 rounded-xl bg-[#0070F3] hover:bg-blue-600 text-white font-black text-xs shadow-sm active:scale-95 transition-all text-center flex items-center justify-center gap-1 min-w-[125px]"
-                >
-                  <span>{lang === "en" ? "⏳ 1 Joined" : "⏳ ১ জন জয়েন"}</span>
-                  <span>›</span>
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!user) {
-                      window.location.href = `/login?redirect=/matches/${match.id}`;
-                      return;
-                    }
-                    setShowJoinModal(true);
-                  }}
-                  disabled={joining}
-                  className="px-4 py-2 rounded-xl bg-[#0070F3] hover:bg-blue-600 text-white font-black text-xs shadow-sm active:scale-95 transition-all min-w-[125px] flex items-center justify-center gap-1 text-center disabled:opacity-50"
-                >
-                  <span>{joining ? (lang === "en" ? "Joining..." : "জয়েনিং...") : (lang === "en" ? "Join (1/2)" : "জয়েন করুন (১/২)")}</span>
-                  <span>›</span>
-                </button>
-              )
+        {/* Bottom 2 Action Buttons matching screenshot 2: "কিভাবে খেলবেন?" and "JOIN NOW" */}
+        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+          <button
+            type="button"
+            onClick={() => setShowHowToPlay(true)}
+            className="py-2.5 px-3 rounded-xl bg-[#0284C7] hover:bg-[#0369A1] text-white font-black text-xs transition-all active:scale-95 text-center flex items-center justify-center gap-1.5 shadow-sm"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span>{lang === "en" ? "How to play?" : "কিভাবে খেলবেন?"}</span>
+          </button>
+
+          {closedStatus ? (
+            <span className="py-2.5 px-3 rounded-xl bg-slate-100 text-slate-500 font-black text-xs text-center flex items-center justify-center">
+              {match.status === "COMPLETED" ? (lang === "en" ? "Completed" : "সম্পন্ন") :
+               match.status === "CANCELLED" ? (lang === "en" ? "Cancelled" : "বাতিল") :
+               (lang === "en" ? "Dispute" : "বিরোধ")}
+            </span>
+          ) : bothFull ? (
+            isParticipant ? (
+              <Link
+                href={`/matches/${match.id}`}
+                className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-sm active:scale-95 transition-all text-center flex items-center justify-center gap-1"
+              >
+                <span>{match.roomCode ? "🔑 রুম রেডি" : "⏳ অপেক্ষা..."}</span>
+                <span>›</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="py-2.5 px-3 rounded-xl bg-slate-200 text-slate-500 font-black text-xs cursor-default text-center flex items-center justify-center"
+              >
+                সিট পূর্ণ
+              </button>
+            )
+          ) : (
+            isParticipant ? (
+              <Link
+                href={`/matches/${match.id}`}
+                className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-sm active:scale-95 transition-all text-center flex items-center justify-center gap-1"
+              >
+                <span>১ জন জয়েন</span>
+                <span>›</span>
+              </Link>
             ) : (
               <button
                 type="button"
@@ -264,40 +255,12 @@ export default function MatchCard({
                   setShowJoinModal(true);
                 }}
                 disabled={joining}
-                className="px-4 py-2 rounded-xl bg-[#0070F3] hover:bg-blue-600 text-white font-black text-xs shadow-sm active:scale-95 transition-all min-w-[125px] flex items-center justify-center gap-1 text-center disabled:opacity-50"
+                className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#00D06C] to-[#059669] hover:from-[#00b960] hover:to-[#047857] text-white font-black text-xs shadow-sm active:scale-95 transition-all flex items-center justify-center gap-1 text-center disabled:opacity-50"
               >
-                <span>{joining ? (lang === "en" ? "Joining..." : "জয়েনিং...") : (lang === "en" ? "Join (0/2)" : "জয়েন করুন (০/২)")}</span>
-                <span>›</span>
+                <span>{joining ? "জয়েনিং..." : "JOIN NOW ⚔"}</span>
               </button>
-            )}
-          </div>
-        </div>
-
-        {/* Bottom 2 Action Buttons matching screenshot: "কিভাবে খেলবেন?" and "রুম আইডি" */}
-        <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-slate-100">
-          <button
-            type="button"
-            onClick={() => setShowHowToPlay(true)}
-            className="py-2.5 px-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-extrabold text-xs transition-all active:scale-95 text-center flex items-center justify-between shadow-none"
-          >
-            <div className="flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-[#0070F3]" />
-              <span>{lang === "en" ? "How to Play?" : "কিভাবে খেলবেন?"}</span>
-            </div>
-            <span className="text-slate-400">›</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowRoomIdModal(true)}
-            className="py-2.5 px-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-extrabold text-xs transition-all active:scale-95 text-center flex items-center justify-between shadow-none"
-          >
-            <div className="flex items-center gap-2">
-              <Lock className="w-4 h-4 text-slate-800" />
-              <span>{lang === "en" ? "Room ID" : "রুম আইডি"}</span>
-            </div>
-            <span className="text-slate-400">›</span>
-          </button>
+            )
+          )}
         </div>
       </div>
 

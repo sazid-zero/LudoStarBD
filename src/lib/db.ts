@@ -1,5 +1,5 @@
 /**
- * Prisma-backed database layer for LudoStar BD.
+ * Prisma-backed database layer for LudoEarn.
  * Exposes the same interface as the old JSON db.ts so all API routes
  * work without any changes — just swap the import.
  */

@@ -77,7 +77,7 @@ function RegisterForm() {
       {/* Brand Header */}
       <div className="text-center mb-6">
         <div className="w-14 h-14 rounded-2xl bg-black/40 border border-amber-400/40 p-1 mx-auto mb-2.5 shadow-xl flex items-center justify-center overflow-hidden">
-          <Image src="/newlogo.png" alt="LudoStar BD" width={48} height={48} className="object-contain w-full h-full rounded-xl" />
+          <Image src="/logo.png" alt="LudoEarn" width={48} height={48} className="object-contain w-full h-full rounded-xl" />
         </div>
         <h1 className="text-xl font-black text-white tracking-tight">
           নতুন একাউন্ট তৈরি করুন
@@ -91,7 +91,7 @@ function RegisterForm() {
       <div className="mb-4 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3">
         <Gift className="w-5 h-5 text-[#00D06C] flex-shrink-0" />
         <span className="text-xs text-emerald-200 font-medium">
-          রেজিস্ট্রেশন করলেই পাচ্ছেন <strong className="text-[#00D06C] font-black">🪙১০ Coins ফ্রি সাইন-আপ বোনাস</strong>!
+          রেজিস্ট্রেশন করলেই পাচ্ছেন <strong className="text-[#00D06C] font-black">৳১০ ফ্রি সাইন-আপ বোনাস</strong>!
         </span>
       </div>
 

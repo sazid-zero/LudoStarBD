@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 import { User, Role } from "./types";
 
-const JWT_SECRET = process.env.JWT_SECRET || "ludostar_bd_super_secret_jwt_key_2026_9482751928";
+const JWT_SECRET = process.env.JWT_SECRET || "ludoearn_super_secret_jwt_key_2026_9482751928";
 const COOKIE_NAME = "ludoearn_token";
 
 export interface TokenPayload {
